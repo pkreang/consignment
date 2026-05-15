@@ -12,6 +12,7 @@ const items = [
   { href: '/products', label: 'Products' },
   { href: '/ar-aging', label: 'AR Aging' },
   { href: '/credit-risk', label: 'Credit Risk' },
+  { href: '/audit', label: 'Audit Log' },
 ];
 
 export function Nav() {

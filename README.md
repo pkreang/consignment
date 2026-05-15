@@ -1,6 +1,6 @@
 # Consignment ERP Lite — Backend
 
-Node.js + Express + TypeScript + Prisma + PostgreSQL backend for a consignment / van sales / route accounting ERP. Phases 1–8 implement schema + master CRUD + stock ledger + sales-visit workflow + collections + AR + credit + reports + tests. Phase 9 adds production polish: Docker, OpenAPI/Swagger, smoke script, Idempotency-Key, CSV export, FEFO lot tracking, mobile endpoints, and a Next.js admin panel.
+Node.js + Express + TypeScript + Prisma + PostgreSQL backend for a consignment / van sales / route accounting ERP. Phases 1–8 implement schema + master CRUD + stock ledger + sales-visit workflow + collections + AR + credit + reports + tests. Phase 9 adds production polish: Docker, OpenAPI/Swagger, smoke script, Idempotency-Key, CSV export, FEFO lot tracking, mobile endpoints, and a Next.js admin panel. Phase 10 adds ops & UX: GitHub Actions CI, Prometheus metrics + structured logs, rate limiting, PDF invoice & receipt, CSV import for master data, webhook + LINE Notify alerts, backup/restore scripts, and admin UI flows for confirm-visit / record-payment / audit-log viewer.
 
 ## Stack
 - Node.js 20+
@@ -164,3 +164,77 @@ balances live in `warehouse_stock_lot` and `consignment_stock_lot`.
 `frontend/` is a Next.js 14 + Tailwind + React Query app with pages for login,
 dashboard, visits (list + detail), customers, products, AR aging, and credit
 risk. See `frontend/README.md`.
+
+## Phase 10 — operations & UX
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push/PR:
+
+- Backend job: `npm ci` → `prisma generate/deploy` against a service Postgres → `tsc --noEmit` → `vitest` (unit + integration) → `openapi:export`.
+- Frontend job: `npm ci` → `tsc --noEmit` → `next build`.
+- Docker job: builds both production images with BuildKit + GHA cache.
+
+### Observability
+
+- `GET /metrics` — Prometheus exposition (Node defaults + `http_requests_total` + `http_request_duration_seconds`).
+- `GET /health` (liveness) and `GET /ready` (DB connectivity probe).
+- Structured request logging via `pino-http`, tagged with the propagated `X-Request-Id`.
+
+### Rate limiting
+
+- Global: 600 req/min/IP (excludes `/health`, `/ready`, `/metrics`, `/docs`).
+- Mutation: 120 req/min on `/confirm`, `/payments`, `/load-to-customer`, `/return-from-customer`, `POST /collections` (keyed by IP + user).
+- Login: 20 failed attempts / 15 min / IP.
+
+### PDF invoice + visit receipt
+
+- `GET /api/v1/ar/invoices/:id/pdf` — A4 tax invoice PDF.
+- `GET /api/v1/sales-visits/:id/receipt.pdf` — A4 visit receipt with item table, collections, and AR summary.
+
+The admin UI exposes "Download PDF" on the visit detail page and a PDF link on each AR aging row.
+
+### CSV import for master data
+
+```bash
+curl -X POST http://localhost:3000/api/v1/imports/products \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: text/csv" \
+  --data-binary @products.csv
+```
+
+`/api/v1/imports/products/sample.csv` and `/api/v1/imports/customers/sample.csv` return ready-to-fill templates. Per-row validation errors come back as HTTP 422 with `{ line, error }` pairs; otherwise the whole batch is upserted in a single transaction.
+
+### Notifications (webhook + LINE Notify)
+
+Configured via env:
+
+- `NOTIFY_WEBHOOK_URL` + optional `NOTIFY_WEBHOOK_SECRET` (HMAC SHA-256 in `X-Signature-256`).
+- `LINE_NOTIFY_TOKEN`.
+- `CREDIT_ALERT_THRESHOLD_PCT` (default 80) — fires `credit.threshold_breach` whenever an inventory/sales flow brings a customer past that % of credit limit.
+- `NOTIFY_DRY_RUN=true` logs but never sends.
+
+Triggers:
+- `credit.threshold_breach` — soft warn when usage crosses the threshold.
+- `credit.limit_exceeded` — critical when a mutation is blocked.
+- `credit.override` — critical with the override reason.
+- `ar.overdue` — from `POST /api/v1/notifications/ar-overdue-scan` (cron daily).
+
+Manual test: `POST /api/v1/notifications/test`. List providers: `GET /api/v1/notifications/providers`.
+
+### Backup / restore
+
+```bash
+DATABASE_URL=postgres://... ./scripts/backup.sh             # daily cron
+CONFIRM=yes DATABASE_URL=... ./scripts/restore.sh file.sql.gz
+```
+
+`backup.sh` writes `consignment-<ts>.sql.gz` to `$BACKUP_DIR` and prunes files older than `BACKUP_RETENTION_DAYS` (default 14).
+
+### Audit log viewer + UI flows
+
+- `GET /api/v1/audit?table_name=...&action_type=...&page=...&pageSize=...`
+- Admin UI:
+  - Visit detail page now has **Record items**, **Confirm visit**, and **Download PDF**.
+  - AR aging page has **Record payment** per outstanding invoice and a PDF link on the invoice number.
+  - **Audit Log** page (`/audit`) lists ledger entries with old/new JSON diffs and filters by table / action.

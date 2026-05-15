@@ -20,6 +20,7 @@ import { reportsRouter } from './reports/reports.routes';
 import { mobileRouter } from './mobile/mobile.routes';
 import { importsRouter } from './imports/imports.routes';
 import { notificationsRouter } from './notifications/notifications.routes';
+import { auditRouter } from './audit/audit.routes';
 
 export const apiRouter = Router();
 
@@ -45,3 +46,4 @@ apiRouter.use('/reports', reportsRouter);
 apiRouter.use('/mobile', mobileRouter);
 apiRouter.use('/imports', importsRouter);
 apiRouter.use('/notifications', notificationsRouter);
+apiRouter.use('/audit', auditRouter);

@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { api, ApiError } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
 
 type Invoice = {
@@ -23,11 +24,17 @@ type AgingPayload = {
 
 const BUCKETS = ['CURRENT', '1_30', '31_60', '61_90', 'OVER_90'];
 
+const API_BASE =
+  typeof window !== 'undefined'
+    ? (process.env.NEXT_PUBLIC_API_BASE_URL ?? '') + '/api/v1'
+    : '/api/v1';
+
 export default function ArAgingPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['ar-aging'],
     queryFn: () => api<AgingPayload>('/reports/ar-aging'),
   });
+  const [paying, setPaying] = useState<Invoice | null>(null);
 
   return (
     <div className="space-y-5">
@@ -39,9 +46,7 @@ export default function ArAgingPage() {
           return (
             <div key={b} className="card p-4">
               <div className="text-xs uppercase tracking-wider text-slate-500">{b}</div>
-              <div className="mt-1 text-xl font-semibold">
-                {fmtMoney(row?.amount ?? '0')}
-              </div>
+              <div className="mt-1 text-xl font-semibold">{fmtMoney(row?.amount ?? '0')}</div>
               <div className="text-xs text-slate-500">{row?.count ?? 0} invoices</div>
             </div>
           );
@@ -60,17 +65,29 @@ export default function ArAgingPage() {
               <th className="px-3 py-2 text-right">Outstanding</th>
               <th className="px-3 py-2">Bucket</th>
               <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2"></th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={9} className="px-3 py-4 text-slate-500">
+                  Loading…
+                </td>
               </tr>
             )}
             {data?.invoices.map((inv) => (
               <tr key={inv.ar_invoice_id} className="table-row">
-                <td className="px-3 py-2 font-mono text-xs">{inv.invoice_no}</td>
+                <td className="px-3 py-2 font-mono text-xs">
+                  <a
+                    className="text-brand-600 hover:underline"
+                    href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {inv.invoice_no}
+                  </a>
+                </td>
                 <td className="px-3 py-2">{inv.customer?.customer_name}</td>
                 <td className="px-3 py-2">{fmtDate(inv.invoice_date)}</td>
                 <td className="px-3 py-2">{fmtDate(inv.due_date)}</td>
@@ -84,10 +101,95 @@ export default function ArAgingPage() {
                 <td className="px-3 py-2">
                   <span className={`pill ${pillForStatus(inv.status)}`}>{inv.status}</span>
                 </td>
+                <td className="px-3 py-2 text-right">
+                  {Number(inv.outstanding_amount) > 0 && (
+                    <button className="btn btn-ghost px-2 py-1 text-xs" onClick={() => setPaying(inv)}>
+                      Record payment
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
+      </div>
+
+      {paying && (
+        <PayDialog
+          inv={paying}
+          onClose={() => setPaying(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [amount, setAmount] = useState(inv.outstanding_amount);
+  const [method, setMethod] = useState<'CASH' | 'BANK_TRANSFER' | 'QR_PAYMENT' | 'OTHER'>('BANK_TRANSFER');
+  const [reference, setReference] = useState('');
+
+  const m = useMutation({
+    mutationFn: async () =>
+      api(`/ar/invoices/${inv.ar_invoice_id}/payments`, {
+        method: 'POST',
+        headers: { 'Idempotency-Key': `pay-${inv.ar_invoice_id}-${Date.now()}` },
+        body: JSON.stringify({
+          amount,
+          payment_method: method,
+          reference_no: reference || undefined,
+        }),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['ar-aging'] });
+      onClose();
+    },
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="card w-full max-w-md space-y-3 p-5 text-sm"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-semibold">Record payment — {inv.invoice_no}</h3>
+        <div className="text-slate-600">
+          Outstanding: <span className="font-medium">{fmtMoney(inv.outstanding_amount)} THB</span>
+        </div>
+        <div>
+          <label className="label">Amount</label>
+          <input className="input" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div>
+          <label className="label">Method</label>
+          <select className="input" value={method} onChange={(e) => setMethod(e.target.value as never)}>
+            <option>CASH</option>
+            <option>BANK_TRANSFER</option>
+            <option>QR_PAYMENT</option>
+            <option>OTHER</option>
+          </select>
+        </div>
+        <div>
+          <label className="label">Reference</label>
+          <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
+        </div>
+        {m.error && (
+          <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            {m.error instanceof ApiError ? m.error.message : 'Failed'}
+          </div>
+        )}
+        <div className="flex justify-end gap-2 pt-2">
+          <button className="btn btn-ghost" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>
+            {m.isPending ? 'Saving…' : 'Record payment'}
+          </button>
+        </div>
       </div>
     </div>
   );

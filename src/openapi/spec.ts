@@ -570,6 +570,10 @@ export const openapiSpec = {
     tag('Credit', 'Exposure, validate, policy, risk'),
     tag('Reports', 'Dashboard + analytical reports'),
     tag('Mobile', 'Endpoints optimised for the van-sales mobile app'),
+    tag('Imports', 'Bulk-upsert master data from CSV'),
+    tag('Notifications', 'Outbound webhook / LINE Notify alerting'),
+    tag('Audit', 'Audit log queries'),
+    tag('Ops', 'Health, readiness, Prometheus metrics'),
   ],
   paths: {
     '/health': {
@@ -1153,6 +1157,73 @@ export const openapiSpec = {
     },
     '/api/v1/reports/production-planning': {
       get: { tags: ['Reports'], summary: 'Suggested production quantities based on avg daily sales', security: auth, parameters: [param('date_from', 'string'), param('date_to', 'string'), param('lead_time_days', 'integer')], responses: { '200': { description: 'OK' }, ...errorResponses }, 'x-permissions': ['report.read'] },
+    },
+
+    '/api/v1/ar/invoices/{id}/pdf': {
+      get: { tags: ['AR'], summary: 'Download invoice as PDF', security: auth, parameters: [param('id', 'string', true)], responses: { '200': { description: 'PDF stream', content: { 'application/pdf': {} } }, ...errorResponses }, 'x-permissions': ['ar.read'] },
+    },
+    '/api/v1/sales-visits/{id}/receipt.pdf': {
+      get: { tags: ['Sales Visits'], summary: 'Download visit receipt as PDF', security: auth, parameters: [param('id', 'string', true)], responses: { '200': { description: 'PDF stream', content: { 'application/pdf': {} } }, ...errorResponses }, 'x-permissions': ['visit.read'] },
+    },
+
+    '/api/v1/imports/products': {
+      post: {
+        tags: ['Imports'],
+        summary: 'Bulk-upsert products from CSV (text/csv body)',
+        security: auth,
+        requestBody: {
+          required: true,
+          content: {
+            'text/csv': { schema: { type: 'string' } },
+            'application/json': { schema: { type: 'object', properties: { csv: { type: 'string' } } } },
+          },
+        },
+        responses: { '200': { description: 'OK' }, ...errorResponses },
+        'x-permissions': ['product.write'],
+      },
+    },
+    '/api/v1/imports/products/sample.csv': {
+      get: { tags: ['Imports'], summary: 'Sample CSV template for products', security: auth, responses: { '200': { description: 'CSV', content: { 'text/csv': {} } }, ...errorResponses } },
+    },
+    '/api/v1/imports/customers': {
+      post: {
+        tags: ['Imports'],
+        summary: 'Bulk-upsert customers from CSV (text/csv body)',
+        security: auth,
+        requestBody: {
+          required: true,
+          content: {
+            'text/csv': { schema: { type: 'string' } },
+            'application/json': { schema: { type: 'object', properties: { csv: { type: 'string' } } } },
+          },
+        },
+        responses: { '200': { description: 'OK' }, ...errorResponses },
+        'x-permissions': ['customer.write'],
+      },
+    },
+    '/api/v1/imports/customers/sample.csv': {
+      get: { tags: ['Imports'], summary: 'Sample CSV template for customers', security: auth, responses: { '200': { description: 'CSV', content: { 'text/csv': {} } }, ...errorResponses } },
+    },
+
+    '/api/v1/notifications/providers': {
+      get: { tags: ['Notifications'], summary: 'List configured outbound providers', security: auth, responses: { '200': { description: 'OK' }, ...errorResponses } },
+    },
+    '/api/v1/notifications/test': {
+      post: { tags: ['Notifications'], summary: 'Send a test notification through every provider', security: auth, responses: { '200': { description: 'OK' }, ...errorResponses } },
+    },
+    '/api/v1/notifications/ar-overdue-scan': {
+      post: { tags: ['Notifications'], summary: 'Scan AR invoices past due and dispatch per-customer alerts', security: auth, responses: { '200': { description: 'OK' }, ...errorResponses }, 'x-permissions': ['ar.read'] },
+    },
+
+    '/api/v1/audit': {
+      get: { tags: ['Audit'], summary: 'Query audit log entries', security: auth, parameters: [param('page', 'integer'), param('pageSize', 'integer'), param('table_name', 'string'), param('record_id', 'string'), param('action_type', 'string'), param('changed_by', 'string'), param('date_from', 'string'), param('date_to', 'string')], responses: { '200': { description: 'OK' }, ...errorResponses }, 'x-permissions': ['user.read'] },
+    },
+
+    '/metrics': {
+      get: { tags: ['Ops'], summary: 'Prometheus exposition (text/plain)', responses: { '200': { description: 'metrics' } } },
+    },
+    '/ready': {
+      get: { tags: ['Ops'], summary: 'Readiness probe (verifies DB connectivity)', responses: { '200': { description: 'OK' }, '503': { description: 'DB unavailable' } } },
     },
   },
   components: { securitySchemes, schemas },
