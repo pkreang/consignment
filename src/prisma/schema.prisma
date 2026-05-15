@@ -1,0 +1,563 @@
+// Consignment ERP Lite — Prisma schema
+// All money fields are Decimal(18,2). All qty fields are Decimal(18,2).
+// Check constraints, additional indexes, sequences, and views live in
+// the post-migration SQL file under prisma/migrations/<ts>_init/migration.sql.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------------------------
+
+enum MovementType {
+  WAREHOUSE_ADJUSTMENT
+  PRODUCTION_RECEIPT
+  LOAD_TO_CUSTOMER
+  SALE_CONFIRMED
+  REPLENISHMENT
+  RETURN_FROM_CUSTOMER
+  CUSTOMER_ADJUSTMENT
+}
+
+enum VisitStatus {
+  DRAFT
+  CHECKED_IN
+  COUNTED
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  QR_PAYMENT
+  OTHER
+}
+
+enum InvoiceStatus {
+  OPEN
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum RefDocType {
+  ADJUSTMENT
+  PRODUCTION
+  LOAD
+  RETURN
+  VISIT
+  REPLENISH
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+// ---------------------------------------------------------------------------
+// MASTER DATA
+// ---------------------------------------------------------------------------
+
+model ProductCategory {
+  category_id   BigInt   @id @default(autoincrement())
+  category_code String   @unique @db.VarChar(20)
+  category_name String   @db.VarChar(100)
+  active_flag   Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  products Product[]
+
+  @@map("product_category")
+}
+
+model Product {
+  product_id      BigInt   @id @default(autoincrement())
+  sku_code        String   @unique @db.VarChar(50)
+  barcode         String?  @db.VarChar(100)
+  product_name    String   @db.VarChar(255)
+  category_id     BigInt?
+  unit            String   @default("PCS") @db.VarChar(20)
+  cost            Decimal  @default(0) @db.Decimal(18, 2)
+  selling_price   Decimal  @default(0) @db.Decimal(18, 2)
+  shelf_life_days Int      @default(0)
+  min_stock       Decimal  @default(0) @db.Decimal(18, 2)
+  max_stock       Decimal  @default(0) @db.Decimal(18, 2)
+  active_flag     Boolean  @default(true)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  category          ProductCategory?  @relation(fields: [category_id], references: [category_id])
+  inventoryBalances InventoryBalance[]
+  consignmentStocks ConsignmentStock[]
+  stockMovements    StockMovement[]
+  visitItems        SalesVisitItem[]
+  invoiceItems      ArInvoiceItem[]
+  lots              ProductLot[]
+
+  @@index([category_id])
+  @@index([sku_code])
+  @@index([active_flag])
+  @@map("product")
+}
+
+model CustomerGroup {
+  group_id   BigInt   @id @default(autoincrement())
+  group_name String   @db.VarChar(100)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  customers Customer[]
+
+  @@map("customer_group")
+}
+
+model Customer {
+  customer_id          BigInt   @id @default(autoincrement())
+  customer_code        String   @unique @db.VarChar(50)
+  customer_name        String   @db.VarChar(255)
+  group_id             BigInt?
+  owner_name           String?  @db.VarChar(255)
+  phone                String?  @db.VarChar(50)
+  line_id              String?  @db.VarChar(100)
+  address              String?  @db.Text
+  province             String?  @db.VarChar(100)
+  latitude             Decimal? @db.Decimal(12, 8)
+  longitude            Decimal? @db.Decimal(12, 8)
+  visit_frequency_days Int      @default(3)
+  max_capacity_qty     Decimal  @default(0) @db.Decimal(18, 2)
+  credit_term_days     Int      @default(0)
+  credit_limit         Decimal  @default(0) @db.Decimal(18, 2)
+  active_flag          Boolean  @default(true)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now()) @updatedAt
+
+  group              CustomerGroup?           @relation(fields: [group_id], references: [group_id])
+  consignmentStocks  ConsignmentStock[]
+  stockMovements     StockMovement[]
+  salesVisits        SalesVisit[]
+  collections        Collection[]
+  arInvoices         ArInvoice[]
+  customerRoutes     CustomerRoute[]
+  creditHistory      CustomerCreditHistory[]
+
+  @@index([customer_code])
+  @@index([group_id])
+  @@index([active_flag])
+  @@map("customer")
+}
+
+model Warehouse {
+  warehouse_id   BigInt   @id @default(autoincrement())
+  warehouse_code String   @unique @db.VarChar(50)
+  warehouse_name String   @db.VarChar(255)
+  active_flag    Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now()) @updatedAt
+
+  inventoryBalances InventoryBalance[]
+  stockMovements    StockMovement[]
+
+  @@map("warehouse")
+}
+
+model Employee {
+  employee_id   BigInt   @id @default(autoincrement())
+  employee_code String   @unique @db.VarChar(50)
+  employee_name String   @db.VarChar(255)
+  mobile_no     String?  @db.VarChar(50)
+  active_flag   Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  salesVisits      SalesVisit[]
+  collections      Collection[]
+  stockMovements   StockMovement[]
+  appUsers         AppUser[]
+
+  @@map("employee")
+}
+
+model Route {
+  route_id    BigInt   @id @default(autoincrement())
+  route_code  String   @unique @db.VarChar(50)
+  route_name  String   @db.VarChar(255)
+  active_flag Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now()) @updatedAt
+
+  customerRoutes CustomerRoute[]
+  salesVisits    SalesVisit[]
+
+  @@map("route")
+}
+
+model CustomerRoute {
+  customer_route_id BigInt   @id @default(autoincrement())
+  customer_id       BigInt
+  route_id          BigInt
+  visit_day         String?  @db.VarChar(20)
+  created_at        DateTime @default(now())
+
+  customer Customer @relation(fields: [customer_id], references: [customer_id], onDelete: Cascade)
+  route    Route    @relation(fields: [route_id], references: [route_id], onDelete: Cascade)
+
+  @@unique([customer_id, route_id])
+  @@index([customer_id])
+  @@index([route_id])
+  @@map("customer_route")
+}
+
+// ---------------------------------------------------------------------------
+// INVENTORY
+// ---------------------------------------------------------------------------
+
+model InventoryBalance {
+  inventory_id  BigInt   @id @default(autoincrement())
+  warehouse_id  BigInt
+  product_id    BigInt
+  qty_on_hand   Decimal  @default(0) @db.Decimal(18, 2)
+  qty_reserved  Decimal  @default(0) @db.Decimal(18, 2)
+  qty_available Decimal  @default(0) @db.Decimal(18, 2)
+  updated_at    DateTime @default(now()) @updatedAt
+
+  warehouse Warehouse @relation(fields: [warehouse_id], references: [warehouse_id])
+  product   Product   @relation(fields: [product_id], references: [product_id])
+
+  @@unique([warehouse_id, product_id])
+  @@index([product_id])
+  @@map("inventory_balance")
+}
+
+model ConsignmentStock {
+  consignment_stock_id BigInt   @id @default(autoincrement())
+  customer_id          BigInt
+  product_id           BigInt
+  qty_on_hand          Decimal  @default(0) @db.Decimal(18, 2)
+  last_visit_date      DateTime?
+  updated_at           DateTime @default(now()) @updatedAt
+
+  customer Customer @relation(fields: [customer_id], references: [customer_id])
+  product  Product  @relation(fields: [product_id], references: [product_id])
+
+  @@unique([customer_id, product_id])
+  @@index([customer_id])
+  @@index([product_id])
+  @@map("consignment_stock")
+}
+
+model StockMovement {
+  movement_id   BigInt       @id @default(autoincrement())
+  movement_date DateTime     @default(now())
+  movement_type MovementType
+  ref_doc_type  RefDocType?
+  ref_doc_id    BigInt?
+  warehouse_id  BigInt?
+  customer_id   BigInt?
+  product_id    BigInt
+  qty_in        Decimal      @default(0) @db.Decimal(18, 2)
+  qty_out       Decimal      @default(0) @db.Decimal(18, 2)
+  balance_after Decimal      @default(0) @db.Decimal(18, 2)
+  unit_cost     Decimal?     @db.Decimal(18, 2)
+  unit_price    Decimal?     @db.Decimal(18, 2)
+  remark        String?      @db.Text
+  created_by    BigInt?
+  created_at    DateTime     @default(now())
+
+  warehouse   Warehouse? @relation(fields: [warehouse_id], references: [warehouse_id])
+  customer    Customer?  @relation(fields: [customer_id], references: [customer_id])
+  product     Product    @relation(fields: [product_id], references: [product_id])
+  createdBy   Employee?  @relation(fields: [created_by], references: [employee_id])
+
+  @@index([product_id])
+  @@index([customer_id])
+  @@index([warehouse_id])
+  @@index([movement_date])
+  @@index([movement_type, movement_date])
+  @@index([ref_doc_type, ref_doc_id])
+  @@map("stock_movement")
+}
+
+// ---------------------------------------------------------------------------
+// SALES VISIT
+// ---------------------------------------------------------------------------
+
+model SalesVisit {
+  visit_id      BigInt      @id @default(autoincrement())
+  visit_no      String      @unique @db.VarChar(50)
+  customer_id   BigInt
+  employee_id   BigInt
+  route_id      BigInt?
+  visit_date    DateTime    @default(now())
+  checkin_time  DateTime?
+  checkout_time DateTime?
+  gps_latitude  Decimal?    @db.Decimal(12, 8)
+  gps_longitude Decimal?    @db.Decimal(12, 8)
+  visit_status  VisitStatus @default(DRAFT)
+  note          String?     @db.Text
+  photo_url     String?     @db.VarChar(500)
+  total_sales_amount Decimal @default(0) @db.Decimal(18, 2)
+  created_at    DateTime    @default(now())
+  updated_at    DateTime    @default(now()) @updatedAt
+
+  customer   Customer         @relation(fields: [customer_id], references: [customer_id])
+  employee   Employee         @relation(fields: [employee_id], references: [employee_id])
+  route      Route?           @relation(fields: [route_id], references: [route_id])
+  items      SalesVisitItem[]
+  collections Collection[]
+  arInvoices ArInvoice[]
+
+  @@index([customer_id])
+  @@index([employee_id])
+  @@index([visit_date])
+  @@index([visit_status])
+  @@index([customer_id, visit_date])
+  @@index([employee_id, visit_date])
+  @@map("sales_visit")
+}
+
+model SalesVisitItem {
+  visit_item_id   BigInt   @id @default(autoincrement())
+  visit_id        BigInt
+  product_id      BigInt
+  qty_before      Decimal  @default(0) @db.Decimal(18, 2)
+  qty_counted     Decimal  @default(0) @db.Decimal(18, 2)
+  qty_sold        Decimal  @default(0) @db.Decimal(18, 2)
+  qty_replenished Decimal  @default(0) @db.Decimal(18, 2)
+  unit_price      Decimal  @default(0) @db.Decimal(18, 2)
+  sales_amount    Decimal  @default(0) @db.Decimal(18, 2)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @default(now()) @updatedAt
+
+  visit   SalesVisit @relation(fields: [visit_id], references: [visit_id], onDelete: Cascade)
+  product Product    @relation(fields: [product_id], references: [product_id])
+
+  @@unique([visit_id, product_id])
+  @@index([visit_id])
+  @@index([product_id])
+  @@map("sales_visit_item")
+}
+
+// ---------------------------------------------------------------------------
+// COLLECTION
+// ---------------------------------------------------------------------------
+
+model Collection {
+  collection_id      BigInt        @id @default(autoincrement())
+  collection_no      String        @unique @db.VarChar(50)
+  visit_id           BigInt?
+  ar_invoice_id      BigInt?
+  customer_id        BigInt
+  collection_date    DateTime      @default(now())
+  total_sales_amount Decimal       @default(0) @db.Decimal(18, 2)
+  amount_collected   Decimal       @default(0) @db.Decimal(18, 2)
+  payment_method     PaymentMethod
+  reference_no       String?       @db.VarChar(100)
+  collected_by       BigInt?
+  note               String?       @db.Text
+  created_at         DateTime      @default(now())
+
+  visit      SalesVisit? @relation(fields: [visit_id], references: [visit_id])
+  arInvoice  ArInvoice?  @relation(fields: [ar_invoice_id], references: [ar_invoice_id])
+  customer   Customer    @relation(fields: [customer_id], references: [customer_id])
+  collector  Employee?   @relation(fields: [collected_by], references: [employee_id])
+
+  @@index([customer_id])
+  @@index([collection_date])
+  @@index([visit_id])
+  @@index([ar_invoice_id])
+  @@map("collection")
+}
+
+// ---------------------------------------------------------------------------
+// AR
+// ---------------------------------------------------------------------------
+
+model ArInvoice {
+  ar_invoice_id      BigInt        @id @default(autoincrement())
+  invoice_no         String        @unique @db.VarChar(50)
+  customer_id        BigInt
+  visit_id           BigInt?
+  invoice_date       DateTime      @default(now())
+  due_date           DateTime
+  total_amount       Decimal       @default(0) @db.Decimal(18, 2)
+  outstanding_amount Decimal       @default(0) @db.Decimal(18, 2)
+  status             InvoiceStatus @default(OPEN)
+  note               String?       @db.Text
+  created_at         DateTime      @default(now())
+  updated_at         DateTime      @default(now()) @updatedAt
+
+  customer    Customer        @relation(fields: [customer_id], references: [customer_id])
+  visit       SalesVisit?     @relation(fields: [visit_id], references: [visit_id])
+  items       ArInvoiceItem[]
+  payments    ArPayment[]
+  collections Collection[]
+
+  @@index([customer_id])
+  @@index([status])
+  @@index([due_date])
+  @@index([customer_id, status])
+  @@map("ar_invoice")
+}
+
+model ArInvoiceItem {
+  ar_invoice_item_id BigInt  @id @default(autoincrement())
+  ar_invoice_id      BigInt
+  product_id         BigInt
+  qty                Decimal @default(0) @db.Decimal(18, 2)
+  unit_price         Decimal @default(0) @db.Decimal(18, 2)
+  line_amount        Decimal @default(0) @db.Decimal(18, 2)
+
+  invoice ArInvoice @relation(fields: [ar_invoice_id], references: [ar_invoice_id], onDelete: Cascade)
+  product Product   @relation(fields: [product_id], references: [product_id])
+
+  @@index([ar_invoice_id])
+  @@map("ar_invoice_item")
+}
+
+model ArPayment {
+  payment_id     BigInt        @id @default(autoincrement())
+  ar_invoice_id  BigInt
+  payment_date   DateTime      @default(now())
+  payment_amount Decimal       @default(0) @db.Decimal(18, 2)
+  payment_method PaymentMethod
+  reference_no   String?       @db.VarChar(100)
+  collection_id  BigInt?
+  created_at     DateTime      @default(now())
+
+  invoice ArInvoice @relation(fields: [ar_invoice_id], references: [ar_invoice_id], onDelete: Cascade)
+
+  @@index([ar_invoice_id])
+  @@index([payment_date])
+  @@map("ar_payment")
+}
+
+// ---------------------------------------------------------------------------
+// SECURITY
+// ---------------------------------------------------------------------------
+
+model Role {
+  role_id    BigInt   @id @default(autoincrement())
+  role_name  String   @unique @db.VarChar(100)
+  created_at DateTime @default(now())
+
+  rolePermissions RolePermission[]
+  appUsers        AppUser[]
+
+  @@map("role")
+}
+
+model Permission {
+  permission_id BigInt   @id @default(autoincrement())
+  module_name   String   @db.VarChar(100)
+  action_name   String   @db.VarChar(100)
+  code          String   @unique @db.VarChar(150)
+  description   String?  @db.VarChar(255)
+  created_at    DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@map("permission")
+}
+
+model RolePermission {
+  role_permission_id BigInt   @id @default(autoincrement())
+  role_id            BigInt
+  permission_id      BigInt
+  created_at         DateTime @default(now())
+
+  role       Role       @relation(fields: [role_id], references: [role_id], onDelete: Cascade)
+  permission Permission @relation(fields: [permission_id], references: [permission_id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@map("role_permission")
+}
+
+model AppUser {
+  user_id       BigInt    @id @default(autoincrement())
+  username      String    @unique @db.VarChar(100)
+  password_hash String    @db.VarChar(500)
+  full_name     String?   @db.VarChar(255)
+  employee_id   BigInt?
+  role_id       BigInt?
+  active_flag   Boolean   @default(true)
+  last_login    DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @default(now()) @updatedAt
+
+  employee Employee? @relation(fields: [employee_id], references: [employee_id])
+  role     Role?     @relation(fields: [role_id], references: [role_id])
+
+  auditLogs            AuditLog[]
+  customerCreditHistory CustomerCreditHistory[]
+
+  @@map("app_user")
+}
+
+// ---------------------------------------------------------------------------
+// AUDIT + POLICY
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  audit_id    BigInt      @id @default(autoincrement())
+  table_name  String      @db.VarChar(100)
+  record_id   BigInt?
+  action_type AuditAction
+  old_value   Json?
+  new_value   Json?
+  context     Json?
+  changed_by  BigInt?
+  changed_at  DateTime    @default(now())
+
+  changedBy AppUser? @relation(fields: [changed_by], references: [user_id])
+
+  @@index([table_name])
+  @@index([record_id])
+  @@index([changed_at])
+  @@map("audit_log")
+}
+
+model ProductLot {
+  lot_id             BigInt    @id @default(autoincrement())
+  product_id         BigInt
+  lot_no             String    @db.VarChar(100)
+  manufacturing_date DateTime?
+  expiry_date        DateTime?
+  qty_received       Decimal   @default(0) @db.Decimal(18, 2)
+  qty_remaining      Decimal   @default(0) @db.Decimal(18, 2)
+  created_at         DateTime  @default(now())
+
+  product Product @relation(fields: [product_id], references: [product_id])
+
+  @@index([product_id])
+  @@index([expiry_date])
+  @@map("product_lot")
+}
+
+model CustomerCreditHistory {
+  credit_history_id BigInt   @id @default(autoincrement())
+  customer_id       BigInt
+  old_credit_limit  Decimal? @db.Decimal(18, 2)
+  new_credit_limit  Decimal? @db.Decimal(18, 2)
+  old_credit_term   Int?
+  new_credit_term   Int?
+  reason            String?  @db.Text
+  changed_by        BigInt?
+  changed_at        DateTime @default(now())
+
+  customer  Customer @relation(fields: [customer_id], references: [customer_id])
+  changedBy AppUser? @relation(fields: [changed_by], references: [user_id])
+
+  @@index([customer_id])
+  @@index([changed_at])
+  @@map("customer_credit_history")
+}
