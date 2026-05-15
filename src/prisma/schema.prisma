@@ -96,7 +96,7 @@ model Product {
   created_at      DateTime @default(now())
   updated_at      DateTime @default(now()) @updatedAt
 
-  category          ProductCategory?  @relation(fields: [category_id], references: [category_id])
+  category          ProductCategory?   @relation(fields: [category_id], references: [category_id])
   inventoryBalances InventoryBalance[]
   consignmentStocks ConsignmentStock[]
   stockMovements    StockMovement[]
@@ -141,14 +141,15 @@ model Customer {
   created_at           DateTime @default(now())
   updated_at           DateTime @default(now()) @updatedAt
 
-  group              CustomerGroup?           @relation(fields: [group_id], references: [group_id])
-  consignmentStocks  ConsignmentStock[]
-  stockMovements     StockMovement[]
-  salesVisits        SalesVisit[]
-  collections        Collection[]
-  arInvoices         ArInvoice[]
-  customerRoutes     CustomerRoute[]
-  creditHistory      CustomerCreditHistory[]
+  group             CustomerGroup?          @relation(fields: [group_id], references: [group_id])
+  consignmentStocks ConsignmentStock[]
+  stockMovements    StockMovement[]
+  salesVisits       SalesVisit[]
+  collections       Collection[]
+  arInvoices        ArInvoice[]
+  customerRoutes    CustomerRoute[]
+  creditHistory     CustomerCreditHistory[]
+  lotBalances       ConsignmentStockLot[]
 
   @@index([customer_code])
   @@index([group_id])
@@ -166,6 +167,7 @@ model Warehouse {
 
   inventoryBalances InventoryBalance[]
   stockMovements    StockMovement[]
+  lotBalances       WarehouseStockLot[]
 
   @@map("warehouse")
 }
@@ -179,10 +181,10 @@ model Employee {
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now()) @updatedAt
 
-  salesVisits      SalesVisit[]
-  collections      Collection[]
-  stockMovements   StockMovement[]
-  appUsers         AppUser[]
+  salesVisits    SalesVisit[]
+  collections    Collection[]
+  stockMovements StockMovement[]
+  appUsers       AppUser[]
 
   @@map("employee")
 }
@@ -239,12 +241,12 @@ model InventoryBalance {
 }
 
 model ConsignmentStock {
-  consignment_stock_id BigInt   @id @default(autoincrement())
+  consignment_stock_id BigInt    @id @default(autoincrement())
   customer_id          BigInt
   product_id           BigInt
-  qty_on_hand          Decimal  @default(0) @db.Decimal(18, 2)
+  qty_on_hand          Decimal   @default(0) @db.Decimal(18, 2)
   last_visit_date      DateTime?
-  updated_at           DateTime @default(now()) @updatedAt
+  updated_at           DateTime  @default(now()) @updatedAt
 
   customer Customer @relation(fields: [customer_id], references: [customer_id])
   product  Product  @relation(fields: [product_id], references: [product_id])
@@ -264,6 +266,7 @@ model StockMovement {
   warehouse_id  BigInt?
   customer_id   BigInt?
   product_id    BigInt
+  lot_id        BigInt?
   qty_in        Decimal      @default(0) @db.Decimal(18, 2)
   qty_out       Decimal      @default(0) @db.Decimal(18, 2)
   balance_after Decimal      @default(0) @db.Decimal(18, 2)
@@ -273,14 +276,16 @@ model StockMovement {
   created_by    BigInt?
   created_at    DateTime     @default(now())
 
-  warehouse   Warehouse? @relation(fields: [warehouse_id], references: [warehouse_id])
-  customer    Customer?  @relation(fields: [customer_id], references: [customer_id])
-  product     Product    @relation(fields: [product_id], references: [product_id])
-  createdBy   Employee?  @relation(fields: [created_by], references: [employee_id])
+  warehouse Warehouse?  @relation(fields: [warehouse_id], references: [warehouse_id])
+  customer  Customer?   @relation(fields: [customer_id], references: [customer_id])
+  product   Product     @relation(fields: [product_id], references: [product_id])
+  lot       ProductLot? @relation(fields: [lot_id], references: [lot_id])
+  createdBy Employee?   @relation(fields: [created_by], references: [employee_id])
 
   @@index([product_id])
   @@index([customer_id])
   @@index([warehouse_id])
+  @@index([lot_id])
   @@index([movement_date])
   @@index([movement_type, movement_date])
   @@index([ref_doc_type, ref_doc_id])
@@ -292,29 +297,29 @@ model StockMovement {
 // ---------------------------------------------------------------------------
 
 model SalesVisit {
-  visit_id      BigInt      @id @default(autoincrement())
-  visit_no      String      @unique @db.VarChar(50)
-  customer_id   BigInt
-  employee_id   BigInt
-  route_id      BigInt?
-  visit_date    DateTime    @default(now())
-  checkin_time  DateTime?
-  checkout_time DateTime?
-  gps_latitude  Decimal?    @db.Decimal(12, 8)
-  gps_longitude Decimal?    @db.Decimal(12, 8)
-  visit_status  VisitStatus @default(DRAFT)
-  note          String?     @db.Text
-  photo_url     String?     @db.VarChar(500)
-  total_sales_amount Decimal @default(0) @db.Decimal(18, 2)
-  created_at    DateTime    @default(now())
-  updated_at    DateTime    @default(now()) @updatedAt
+  visit_id           BigInt      @id @default(autoincrement())
+  visit_no           String      @unique @db.VarChar(50)
+  customer_id        BigInt
+  employee_id        BigInt
+  route_id           BigInt?
+  visit_date         DateTime    @default(now())
+  checkin_time       DateTime?
+  checkout_time      DateTime?
+  gps_latitude       Decimal?    @db.Decimal(12, 8)
+  gps_longitude      Decimal?    @db.Decimal(12, 8)
+  visit_status       VisitStatus @default(DRAFT)
+  note               String?     @db.Text
+  photo_url          String?     @db.VarChar(500)
+  total_sales_amount Decimal     @default(0) @db.Decimal(18, 2)
+  created_at         DateTime    @default(now())
+  updated_at         DateTime    @default(now()) @updatedAt
 
-  customer   Customer         @relation(fields: [customer_id], references: [customer_id])
-  employee   Employee         @relation(fields: [employee_id], references: [employee_id])
-  route      Route?           @relation(fields: [route_id], references: [route_id])
-  items      SalesVisitItem[]
+  customer    Customer         @relation(fields: [customer_id], references: [customer_id])
+  employee    Employee         @relation(fields: [employee_id], references: [employee_id])
+  route       Route?           @relation(fields: [route_id], references: [route_id])
+  items       SalesVisitItem[]
   collections Collection[]
-  arInvoices ArInvoice[]
+  arInvoices  ArInvoice[]
 
   @@index([customer_id])
   @@index([employee_id])
@@ -366,10 +371,10 @@ model Collection {
   note               String?       @db.Text
   created_at         DateTime      @default(now())
 
-  visit      SalesVisit? @relation(fields: [visit_id], references: [visit_id])
-  arInvoice  ArInvoice?  @relation(fields: [ar_invoice_id], references: [ar_invoice_id])
-  customer   Customer    @relation(fields: [customer_id], references: [customer_id])
-  collector  Employee?   @relation(fields: [collected_by], references: [employee_id])
+  visit     SalesVisit? @relation(fields: [visit_id], references: [visit_id])
+  arInvoice ArInvoice?  @relation(fields: [ar_invoice_id], references: [ar_invoice_id])
+  customer  Customer    @relation(fields: [customer_id], references: [customer_id])
+  collector Employee?   @relation(fields: [collected_by], references: [employee_id])
 
   @@index([customer_id])
   @@index([collection_date])
@@ -497,7 +502,7 @@ model AppUser {
   employee Employee? @relation(fields: [employee_id], references: [employee_id])
   role     Role?     @relation(fields: [role_id], references: [role_id])
 
-  auditLogs            AuditLog[]
+  auditLogs             AuditLog[]
   customerCreditHistory CustomerCreditHistory[]
 
   @@map("app_user")
@@ -536,11 +541,46 @@ model ProductLot {
   qty_remaining      Decimal   @default(0) @db.Decimal(18, 2)
   created_at         DateTime  @default(now())
 
-  product Product @relation(fields: [product_id], references: [product_id])
+  product             Product               @relation(fields: [product_id], references: [product_id])
+  warehouseBalances   WarehouseStockLot[]
+  consignmentBalances ConsignmentStockLot[]
+  stockMovements      StockMovement[]
 
   @@index([product_id])
   @@index([expiry_date])
   @@map("product_lot")
+}
+
+model WarehouseStockLot {
+  warehouse_stock_lot_id BigInt   @id @default(autoincrement())
+  warehouse_id           BigInt
+  lot_id                 BigInt
+  qty_on_hand            Decimal  @default(0) @db.Decimal(18, 2)
+  updated_at             DateTime @default(now()) @updatedAt
+
+  warehouse Warehouse  @relation(fields: [warehouse_id], references: [warehouse_id])
+  lot       ProductLot @relation(fields: [lot_id], references: [lot_id])
+
+  @@unique([warehouse_id, lot_id])
+  @@index([warehouse_id])
+  @@index([lot_id])
+  @@map("warehouse_stock_lot")
+}
+
+model ConsignmentStockLot {
+  consignment_stock_lot_id BigInt   @id @default(autoincrement())
+  customer_id              BigInt
+  lot_id                   BigInt
+  qty_on_hand              Decimal  @default(0) @db.Decimal(18, 2)
+  updated_at               DateTime @default(now()) @updatedAt
+
+  customer Customer   @relation(fields: [customer_id], references: [customer_id])
+  lot      ProductLot @relation(fields: [lot_id], references: [lot_id])
+
+  @@unique([customer_id, lot_id])
+  @@index([customer_id])
+  @@index([lot_id])
+  @@map("consignment_stock_lot")
 }
 
 model CustomerCreditHistory {
@@ -560,4 +600,23 @@ model CustomerCreditHistory {
   @@index([customer_id])
   @@index([changed_at])
   @@map("customer_credit_history")
+}
+
+// Idempotency-Key replay store. The fingerprint is sha256(method:url:body) so
+// retrying the SAME request returns the cached response, but the same key
+// against a different payload is rejected with 409.
+model IdempotencyKey {
+  idempotency_key_id BigInt   @id @default(autoincrement())
+  key                String   @db.VarChar(200)
+  user_id            BigInt?
+  method             String   @db.VarChar(10)
+  path               String   @db.VarChar(500)
+  request_hash       String   @db.VarChar(128)
+  status_code        Int
+  response_body      Json
+  created_at         DateTime @default(now())
+
+  @@unique([key, user_id])
+  @@index([created_at])
+  @@map("idempotency_key")
 }

@@ -27,6 +27,13 @@ import {
   applyWarehouseDelta,
   lockOrCreateConsignmentStock,
 } from '../inventory/inventory.service';
+import {
+  applyConsignmentLotDelta,
+  applyWarehouseLotDelta,
+  pickConsignmentLotsFEFO,
+  pickWarehouseLotsFEFO,
+  recordLotConsumption,
+} from '../inventory/lot.service';
 import { createCollectionTx } from '../collections/collections.service';
 import { applyPaymentTx, createInvoiceTx } from '../ar/ar.service';
 import { money, plus, times, toDecimal } from '../../common/utils/money';
@@ -338,21 +345,37 @@ export async function confirmVisit(
         },
       });
 
-      // 1a. SALE_CONFIRMED — reduce consignment by qty_sold
+      // 1a. SALE_CONFIRMED — FEFO-decrement customer lots first, then the aggregate
       if (qtySold.gt(0)) {
-        await applyConsignmentDelta({
-          tx,
+        const picks = await pickConsignmentLotsFEFO(tx, {
           customer_id: visit.customer_id,
           product_id: item.product_id,
-          delta: qtySold.negated(),
-          movement_type: 'SALE_CONFIRMED',
-          ref_doc_type: 'VISIT',
-          ref_doc_id: visit_id,
-          unit_price: unitPrice.toFixed(2),
-          unit_cost: toDecimal(item.product.cost).toFixed(2),
-          remark: `Visit ${visit.visit_no}`,
-          created_by: user.employeeId ?? null,
+          qty: qtySold,
         });
+        for (const pick of picks) {
+          if (pick.lot_id !== null) {
+            await applyConsignmentLotDelta(tx, {
+              customer_id: visit.customer_id,
+              lot_id: pick.lot_id,
+              delta: pick.qty.negated(),
+            });
+            await recordLotConsumption(tx, { lot_id: pick.lot_id, qty: pick.qty });
+          }
+          await applyConsignmentDelta({
+            tx,
+            customer_id: visit.customer_id,
+            product_id: item.product_id,
+            delta: pick.qty.negated(),
+            movement_type: 'SALE_CONFIRMED',
+            ref_doc_type: 'VISIT',
+            ref_doc_id: visit_id,
+            unit_price: unitPrice.toFixed(2),
+            unit_cost: toDecimal(item.product.cost).toFixed(2),
+            remark: `Visit ${visit.visit_no}`,
+            created_by: user.employeeId ?? null,
+            lot_id: pick.lot_id,
+          });
+        }
       }
       recomputedItems.push({
         product_id: item.product_id,
@@ -401,30 +424,52 @@ export async function confirmVisit(
       });
 
       for (const l of replenishLines) {
-        await applyWarehouseDelta({
-          tx,
+        const picks = await pickWarehouseLotsFEFO(tx, {
           warehouse_id: input.warehouse_id,
           product_id: l.product_id,
-          delta: l.qty_replenished.negated(),
-          movement_type: 'REPLENISHMENT',
-          ref_doc_type: 'REPLENISH',
-          ref_doc_id: visit_id,
-          unit_price: l.unit_price.toFixed(2),
-          remark: `Visit ${visit.visit_no}`,
-          created_by: user.employeeId ?? null,
+          qty: l.qty_replenished,
         });
-        await applyConsignmentDelta({
-          tx,
-          customer_id: visit.customer_id,
-          product_id: l.product_id,
-          delta: l.qty_replenished,
-          movement_type: 'REPLENISHMENT',
-          ref_doc_type: 'REPLENISH',
-          ref_doc_id: visit_id,
-          unit_price: l.unit_price.toFixed(2),
-          remark: `Visit ${visit.visit_no}`,
-          created_by: user.employeeId ?? null,
-        });
+        for (const pick of picks) {
+          if (pick.lot_id !== null) {
+            await applyWarehouseLotDelta(tx, {
+              warehouse_id: input.warehouse_id,
+              lot_id: pick.lot_id,
+              delta: pick.qty.negated(),
+            });
+            await recordLotConsumption(tx, { lot_id: pick.lot_id, qty: pick.qty });
+            await applyConsignmentLotDelta(tx, {
+              customer_id: visit.customer_id,
+              lot_id: pick.lot_id,
+              delta: pick.qty,
+            });
+          }
+          await applyWarehouseDelta({
+            tx,
+            warehouse_id: input.warehouse_id,
+            product_id: l.product_id,
+            delta: pick.qty.negated(),
+            movement_type: 'REPLENISHMENT',
+            ref_doc_type: 'REPLENISH',
+            ref_doc_id: visit_id,
+            unit_price: l.unit_price.toFixed(2),
+            remark: `Visit ${visit.visit_no}`,
+            created_by: user.employeeId ?? null,
+            lot_id: pick.lot_id,
+          });
+          await applyConsignmentDelta({
+            tx,
+            customer_id: visit.customer_id,
+            product_id: l.product_id,
+            delta: pick.qty,
+            movement_type: 'REPLENISHMENT',
+            ref_doc_type: 'REPLENISH',
+            ref_doc_id: visit_id,
+            unit_price: l.unit_price.toFixed(2),
+            remark: `Visit ${visit.visit_no}`,
+            created_by: user.employeeId ?? null,
+            lot_id: pick.lot_id,
+          });
+        }
       }
     }
 

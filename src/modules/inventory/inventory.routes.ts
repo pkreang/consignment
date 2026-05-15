@@ -2,10 +2,12 @@ import { Router } from 'express';
 import { asyncHandler } from '../../common/utils/asyncHandler';
 import { authenticate, requirePermission } from '../../common/middleware/auth';
 import { validate } from '../../common/middleware/validate';
+import { idempotency } from '../../common/middleware/idempotency';
 import {
   adjustmentSchema,
   consignmentStockQuery,
   loadToCustomerSchema,
+  lotListQuery,
   movementListQuery,
   productionReceiptSchema,
   returnFromCustomerSchema,
@@ -43,6 +45,15 @@ inventoryRouter.get(
   ),
 );
 
+inventoryRouter.get(
+  '/lots',
+  requirePermission('inventory.read'),
+  validate({ query: lotListQuery }),
+  asyncHandler(async (req, res) =>
+    res.json(await svc.listLots(req.query as never)),
+  ),
+);
+
 inventoryRouter.post(
   '/adjustment',
   requirePermission('inventory.adjust'),
@@ -64,6 +75,7 @@ inventoryRouter.post(
 inventoryRouter.post(
   '/load-to-customer',
   requirePermission('inventory.load'),
+  idempotency(),
   validate({ body: loadToCustomerSchema }),
   asyncHandler(async (req, res) =>
     res.status(201).json(await svc.loadStockToCustomer(req.body, req.user)),
@@ -73,6 +85,7 @@ inventoryRouter.post(
 inventoryRouter.post(
   '/return-from-customer',
   requirePermission('inventory.return'),
+  idempotency(),
   validate({ body: returnFromCustomerSchema }),
   asyncHandler(async (req, res) =>
     res.status(201).json(await svc.returnStockFromCustomer(req.body, req.user)),

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../common/utils/asyncHandler';
 import { authenticate, requirePermission } from '../../common/middleware/auth';
 import { validate } from '../../common/middleware/validate';
+import { idempotency } from '../../common/middleware/idempotency';
 import { idParamSchema } from '../../common/validators/common';
 import {
   agingQuery,
@@ -44,6 +45,7 @@ arRouter.post(
 arRouter.post(
   '/invoices/:id/payments',
   requirePermission('ar.payment.write'),
+  idempotency(),
   validate({ params: idParamSchema, body: invoicePaymentSchema }),
   asyncHandler(async (req, res) =>
     res.status(201).json(

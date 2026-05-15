@@ -1,0 +1,1931 @@
+{
+  "info": {
+    "name": "Consignment ERP Lite — API",
+    "description": "REST API for the Consignment / Van Sales / Route Accounting backend. All money fields are decimal strings (precision 18, scale 2). All ids are BigInt-as-string. Authenticated endpoints require a Bearer JWT obtained from `/api/v1/auth/login`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Liveness probe"
+          }
+        },
+        {
+          "name": "POST /api/v1/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@12345\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Login with username + password and obtain JWT"
+          }
+        },
+        {
+          "name": "GET /api/v1/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get the current authenticated user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "GET /api/v1/products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "description": "List Products"
+          }
+        },
+        {
+          "name": "POST /api/v1/products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku_code\": {\n    \"type\": \"string\",\n    \"maxLength\": 50\n  },\n  \"barcode\": {\n    \"type\": \"string\",\n    \"maxLength\": 100\n  },\n  \"product_name\": {\n    \"type\": \"string\",\n    \"maxLength\": 255\n  },\n  \"category_id\": {\n    \"type\": \"string\"\n  },\n  \"unit\": {\n    \"type\": \"string\",\n    \"default\": \"PCS\"\n  },\n  \"cost\": \"5.00\",\n  \"selling_price\": \"12.00\",\n  \"shelf_life_days\": {\n    \"type\": \"integer\"\n  },\n  \"min_stock\": {\n    \"type\": \"string\"\n  },\n  \"max_stock\": {\n    \"type\": \"string\"\n  },\n  \"active_flag\": {\n    \"type\": \"boolean\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create Products"
+          }
+        },
+        {
+          "name": "GET /api/v1/products/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":id"
+              ]
+            },
+            "description": "Get Products by id"
+          }
+        },
+        {
+          "name": "PUT /api/v1/products/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sku_code\": {\n    \"type\": \"string\",\n    \"maxLength\": 50\n  },\n  \"barcode\": {\n    \"type\": \"string\",\n    \"maxLength\": 100\n  },\n  \"product_name\": {\n    \"type\": \"string\",\n    \"maxLength\": 255\n  },\n  \"category_id\": {\n    \"type\": \"string\"\n  },\n  \"unit\": {\n    \"type\": \"string\",\n    \"default\": \"PCS\"\n  },\n  \"cost\": \"5.00\",\n  \"selling_price\": \"12.00\",\n  \"shelf_life_days\": {\n    \"type\": \"integer\"\n  },\n  \"min_stock\": {\n    \"type\": \"string\"\n  },\n  \"max_stock\": {\n    \"type\": \"string\"\n  },\n  \"active_flag\": {\n    \"type\": \"boolean\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update Products"
+          }
+        },
+        {
+          "name": "DELETE /api/v1/products/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/products/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":id"
+              ]
+            },
+            "description": "Soft-delete Products"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "GET /api/v1/customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers"
+              ]
+            },
+            "description": "List Customers"
+          }
+        },
+        {
+          "name": "POST /api/v1/customers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_code\": {\n    \"type\": \"string\",\n    \"maxLength\": 50\n  },\n  \"customer_name\": {\n    \"type\": \"string\",\n    \"maxLength\": 255\n  },\n  \"group_id\": {\n    \"type\": \"string\"\n  },\n  \"owner_name\": {\n    \"type\": \"string\"\n  },\n  \"phone\": {\n    \"type\": \"string\"\n  },\n  \"line_id\": {\n    \"type\": \"string\"\n  },\n  \"address\": {\n    \"type\": \"string\"\n  },\n  \"province\": {\n    \"type\": \"string\"\n  },\n  \"latitude\": {\n    \"type\": \"string\"\n  },\n  \"longitude\": {\n    \"type\": \"string\"\n  },\n  \"visit_frequency_days\": {\n    \"type\": \"integer\",\n    \"default\": 3\n  },\n  \"max_capacity_qty\": {\n    \"type\": \"string\",\n    \"default\": \"0\"\n  },\n  \"credit_term_days\": {\n    \"type\": \"integer\",\n    \"default\": 0\n  },\n  \"credit_limit\": {\n    \"type\": \"string\",\n    \"default\": \"0\"\n  },\n  \"active_flag\": {\n    \"type\": \"boolean\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create Customers"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ]
+            },
+            "description": "Get Customers by id"
+          }
+        },
+        {
+          "name": "PUT /api/v1/customers/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_code\": {\n    \"type\": \"string\",\n    \"maxLength\": 50\n  },\n  \"customer_name\": {\n    \"type\": \"string\",\n    \"maxLength\": 255\n  },\n  \"group_id\": {\n    \"type\": \"string\"\n  },\n  \"owner_name\": {\n    \"type\": \"string\"\n  },\n  \"phone\": {\n    \"type\": \"string\"\n  },\n  \"line_id\": {\n    \"type\": \"string\"\n  },\n  \"address\": {\n    \"type\": \"string\"\n  },\n  \"province\": {\n    \"type\": \"string\"\n  },\n  \"latitude\": {\n    \"type\": \"string\"\n  },\n  \"longitude\": {\n    \"type\": \"string\"\n  },\n  \"visit_frequency_days\": {\n    \"type\": \"integer\",\n    \"default\": 3\n  },\n  \"max_capacity_qty\": {\n    \"type\": \"string\",\n    \"default\": \"0\"\n  },\n  \"credit_term_days\": {\n    \"type\": \"integer\",\n    \"default\": 0\n  },\n  \"credit_limit\": {\n    \"type\": \"string\",\n    \"default\": \"0\"\n  },\n  \"active_flag\": {\n    \"type\": \"boolean\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update Customers"
+          }
+        },
+        {
+          "name": "DELETE /api/v1/customers/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id"
+              ]
+            },
+            "description": "Soft-delete Customers"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}/stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}/stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id",
+                "stock"
+              ]
+            },
+            "description": "Consignment stock currently held by a customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}/sales-history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}/sales-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id",
+                "sales-history"
+              ]
+            },
+            "description": "Visit + sale history for a customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}/collection-history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}/collection-history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id",
+                "collection-history"
+              ]
+            },
+            "description": "Collection history for a customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}/ar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}/ar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id",
+                "ar"
+              ]
+            },
+            "description": "AR invoices for a customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/customers/{id}/credit-exposure",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/customers/{id}/credit-exposure",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "customers",
+                ":id",
+                "credit-exposure"
+              ]
+            },
+            "description": "Compute live credit exposure for a customer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "GET /api/v1/inventory/warehouse",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/warehouse",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "warehouse"
+              ]
+            },
+            "description": "List warehouse stock balances"
+          }
+        },
+        {
+          "name": "GET /api/v1/inventory/consignment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/consignment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "consignment"
+              ]
+            },
+            "description": "List consignment stock balances"
+          }
+        },
+        {
+          "name": "GET /api/v1/inventory/lots",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/lots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "lots"
+              ]
+            },
+            "description": "List product lots (FEFO source-of-truth) with per-location balances"
+          }
+        },
+        {
+          "name": "GET /api/v1/inventory/movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/movements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "movements"
+              ]
+            },
+            "description": "List stock movements (the audit ledger)"
+          }
+        },
+        {
+          "name": "POST /api/v1/inventory/adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/adjustment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "adjustment"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouse_id\": {\n    \"type\": \"string\"\n  },\n  \"remark\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"delta_qty\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"delta_qty\": {\n          \"type\": \"string\",\n          \"description\": \"positive=add, negative=remove (cannot be zero)\"\n        },\n        \"unit_cost\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Adjust warehouse stock (manual delta) — creates a WAREHOUSE_ADJUSTMENT movement"
+          }
+        },
+        {
+          "name": "POST /api/v1/inventory/production-receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/production-receipt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "production-receipt"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouse_id\": {\n    \"type\": \"string\"\n  },\n  \"remark\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty\": {\n          \"type\": \"string\"\n        },\n        \"unit_cost\": {\n          \"type\": \"string\"\n        },\n        \"lot_no\": {\n          \"type\": \"string\",\n          \"description\": \"Optional lot number; when set, a product_lot row is created/topped-up.\"\n        },\n        \"manufacturing_date\": {\n          \"type\": \"string\",\n          \"format\": \"date-time\"\n        },\n        \"expiry_date\": {\n          \"type\": \"string\",\n          \"format\": \"date-time\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Record stock received from production"
+          }
+        },
+        {
+          "name": "POST /api/v1/inventory/load-to-customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/load-to-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "load-to-customer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {\n    \"type\": \"string\"\n  },\n  \"warehouse_id\": {\n    \"type\": \"string\"\n  },\n  \"remark\": {\n    \"type\": \"string\"\n  },\n  \"override_credit\": {\n    \"type\": \"boolean\"\n  },\n  \"override_reason\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty\": {\n          \"type\": \"string\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        },\n        \"unit_cost\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Load stock to a customer (or replenish). Credit-checked."
+          }
+        },
+        {
+          "name": "POST /api/v1/inventory/return-from-customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/inventory/return-from-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "inventory",
+                "return-from-customer"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {\n    \"type\": \"string\"\n  },\n  \"warehouse_id\": {\n    \"type\": \"string\"\n  },\n  \"remark\": {\n    \"type\": \"string\"\n  },\n  \"override_credit\": {\n    \"type\": \"boolean\"\n  },\n  \"override_reason\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty\": {\n          \"type\": \"string\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        },\n        \"unit_cost\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Return stock from a customer back to the warehouse"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales Visits",
+      "item": [
+        {
+          "name": "GET /api/v1/sales-visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits"
+              ]
+            },
+            "description": "List sales visits"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {\n    \"type\": \"string\"\n  },\n  \"employee_id\": {\n    \"type\": \"string\"\n  },\n  \"route_id\": {\n    \"type\": \"string\"\n  },\n  \"visit_date\": {\n    \"type\": \"string\",\n    \"format\": \"date-time\"\n  },\n  \"note\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create a sales visit (DRAFT)"
+          }
+        },
+        {
+          "name": "GET /api/v1/sales-visits/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id"
+              ]
+            },
+            "description": "Get visit detail including items, collections, and AR invoices"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits/{id}/checkin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}/checkin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id",
+                "checkin"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gps_latitude\": {\n    \"type\": \"string\"\n  },\n  \"gps_longitude\": {\n    \"type\": \"string\"\n  },\n  \"photo_url\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Check in (record GPS + timestamp)"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits/{id}/items",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id",
+                "items"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty_counted\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty_counted\": {\n          \"type\": \"string\"\n        },\n        \"qty_replenished\": {\n          \"type\": \"string\",\n          \"default\": \"0\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Record per-SKU counts + replenish intents (qty_sold/sales_amount computed)"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits/{id}/confirm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id",
+                "confirm"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"warehouse_id\": {\n    \"type\": \"string\",\n    \"description\": \"Required if any line has qty_replenished > 0\"\n  },\n  \"payment_method\": {\n    \"type\": \"string\",\n    \"enum\": [\n      \"CASH\",\n      \"BANK_TRANSFER\",\n      \"QR_PAYMENT\",\n      \"OTHER\"\n    ]\n  },\n  \"amount_collected\": {\n    \"type\": \"string\"\n  },\n  \"reference_no\": {\n    \"type\": \"string\"\n  },\n  \"override_credit\": {\n    \"type\": \"boolean\"\n  },\n  \"override_reason\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Atomic confirm: SALE_CONFIRMED + REPLENISHMENT + collection / AR invoice"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits/{id}/checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id",
+                "checkout"
+              ]
+            },
+            "description": "Record checkout time"
+          }
+        },
+        {
+          "name": "POST /api/v1/sales-visits/{id}/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sales-visits/{id}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sales-visits",
+                ":id",
+                "cancel"
+              ]
+            },
+            "description": "Cancel a non-confirmed visit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Collections",
+      "item": [
+        {
+          "name": "GET /api/v1/collections",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/collections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "collections"
+              ]
+            },
+            "description": "List collections"
+          }
+        },
+        {
+          "name": "POST /api/v1/collections",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/collections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "collections"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {\n    \"type\": \"string\"\n  },\n  \"amount_collected\": {\n    \"type\": \"string\"\n  },\n  \"payment_method\": {\n    \"type\": \"string\",\n    \"enum\": [\n      \"CASH\",\n      \"BANK_TRANSFER\",\n      \"QR_PAYMENT\",\n      \"OTHER\"\n    ]\n  },\n  \"reference_no\": {\n    \"type\": \"string\"\n  },\n  \"note\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Standalone collection that settles outstanding AR FIFO by due_date"
+          }
+        },
+        {
+          "name": "GET /api/v1/collections/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/collections/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "collections",
+                ":id"
+              ]
+            },
+            "description": "Get a collection"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AR",
+      "item": [
+        {
+          "name": "GET /api/v1/ar/invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "invoices"
+              ]
+            },
+            "description": "List AR invoices"
+          }
+        },
+        {
+          "name": "POST /api/v1/ar/invoices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "invoices"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": {\n    \"type\": \"string\"\n  },\n  \"invoice_date\": {\n    \"type\": \"string\",\n    \"format\": \"date-time\"\n  },\n  \"credit_term_days\": {\n    \"type\": \"integer\"\n  },\n  \"note\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty\",\n        \"unit_price\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty\": {\n          \"type\": \"string\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Create AR invoice manually"
+          }
+        },
+        {
+          "name": "GET /api/v1/ar/invoices/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/invoices/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "invoices",
+                ":id"
+              ]
+            },
+            "description": "Get AR invoice"
+          }
+        },
+        {
+          "name": "POST /api/v1/ar/invoices/{id}/payments",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/invoices/{id}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "invoices",
+                ":id",
+                "payments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": {\n    \"type\": \"string\"\n  },\n  \"payment_method\": {\n    \"type\": \"string\",\n    \"enum\": [\n      \"CASH\",\n      \"BANK_TRANSFER\",\n      \"QR_PAYMENT\",\n      \"OTHER\"\n    ]\n  },\n  \"reference_no\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Record a payment against a specific invoice"
+          }
+        },
+        {
+          "name": "GET /api/v1/ar/aging",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/aging",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "aging"
+              ]
+            },
+            "description": "AR aging report (CURRENT / 1_30 / 31_60 / 61_90 / OVER_90)"
+          }
+        },
+        {
+          "name": "GET /api/v1/ar/outstanding",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/outstanding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "outstanding"
+              ]
+            },
+            "description": "Outstanding AR summary by customer"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credit",
+      "item": [
+        {
+          "name": "GET /api/v1/credit/customers/{id}/exposure",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/credit/customers/{id}/exposure",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "credit",
+                "customers",
+                ":id",
+                "exposure"
+              ]
+            },
+            "description": "Compute current credit exposure"
+          }
+        },
+        {
+          "name": "POST /api/v1/credit/customers/{id}/validate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/credit/customers/{id}/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "credit",
+                "customers",
+                ":id",
+                "validate"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"additional_value\": {\n    \"type\": \"string\"\n  },\n  \"lines\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty\": {\n          \"type\": \"string\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Preview a load and check whether the projected exposure would exceed the limit"
+          }
+        },
+        {
+          "name": "PUT /api/v1/credit/customers/{id}/policy",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/credit/customers/{id}/policy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "credit",
+                "customers",
+                ":id",
+                "policy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credit_limit\": {\n    \"type\": \"string\"\n  },\n  \"credit_term_days\": {\n    \"type\": \"integer\"\n  },\n  \"reason\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Update credit limit / term (writes customer_credit_history)"
+          }
+        },
+        {
+          "name": "GET /api/v1/credit/risk",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/credit/risk",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "credit",
+                "risk"
+              ]
+            },
+            "description": "Customers near or above their credit limit"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "GET /api/v1/reports/dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "dashboard"
+              ]
+            },
+            "description": "Dashboard KPIs"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/sales-by-customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/sales-by-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "sales-by-customer"
+              ]
+            },
+            "description": "Sales grouped by customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/sales-by-sku",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/sales-by-sku",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "sales-by-sku"
+              ]
+            },
+            "description": "Sales grouped by SKU"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/sales-by-employee",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/sales-by-employee",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "sales-by-employee"
+              ]
+            },
+            "description": "Sales grouped by employee"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/current-stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/current-stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "current-stock"
+              ]
+            },
+            "description": "Current warehouse stock"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/consignment-stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/consignment-stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "consignment-stock"
+              ]
+            },
+            "description": "Consignment stock by customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/collection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/collection",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "collection"
+              ]
+            },
+            "description": "Daily collection by payment method"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/ar-aging",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/ar-aging",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "ar-aging"
+              ]
+            },
+            "description": "AR aging (derived OVERDUE)"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/ar-outstanding",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/ar-outstanding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "ar-outstanding"
+              ]
+            },
+            "description": "Outstanding AR summary by customer"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/best-sellers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/best-sellers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "best-sellers"
+              ]
+            },
+            "description": "Best-selling SKUs"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/slow-movers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/slow-movers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "slow-movers"
+              ]
+            },
+            "description": "Slow-moving SKUs"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/dead-stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/dead-stock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "dead-stock"
+              ]
+            },
+            "description": "Dead stock alert (no SALE_CONFIRMED within N days)"
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/production-planning",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/production-planning",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reports",
+                "production-planning"
+              ]
+            },
+            "description": "Suggested production quantities based on avg daily sales"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mobile",
+      "item": [
+        {
+          "name": "GET /api/v1/mobile/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mobile/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mobile",
+                "me"
+              ]
+            },
+            "description": "Slim profile of the calling user"
+          }
+        },
+        {
+          "name": "GET /api/v1/mobile/today",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mobile/today",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mobile",
+                "today"
+              ]
+            },
+            "description": "Today's visits for the calling rep, with current consignment stock"
+          }
+        },
+        {
+          "name": "POST /api/v1/mobile/visits/{id}/sync",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mobile/visits/{id}/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mobile",
+                "visits",
+                ":id",
+                "sync"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"checkin\": {\n    \"gps_latitude\": {\n      \"type\": \"string\"\n    },\n    \"gps_longitude\": {\n      \"type\": \"string\"\n    },\n    \"photo_url\": {\n      \"type\": \"string\"\n    }\n  },\n  \"items\": {\n    \"type\": \"array\",\n    \"items\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"product_id\",\n        \"qty_counted\"\n      ],\n      \"properties\": {\n        \"product_id\": {\n          \"type\": \"string\"\n        },\n        \"qty_counted\": {\n          \"type\": \"string\"\n        },\n        \"qty_replenished\": {\n          \"type\": \"string\"\n        },\n        \"unit_price\": {\n          \"type\": \"string\"\n        }\n      }\n    }\n  },\n  \"note\": {\n    \"type\": \"string\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Batch check-in + record-items in a single call (network-friendly)"
+          }
+        },
+        {
+          "name": "POST /api/v1/mobile/uploads/sign",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/mobile/uploads/sign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mobile",
+                "uploads",
+                "sign"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"filename\": {\n    \"type\": \"string\"\n  },\n  \"content_type\": {\n    \"type\": \"string\"\n  },\n  \"purpose\": {\n    \"type\": \"string\",\n    \"enum\": [\n      \"visit_photo\",\n      \"product\",\n      \"avatar\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Get a (stubbed) presigned PUT URL for visit / product photos"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -2,18 +2,25 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import './common/utils/json';
 import { requestId } from './common/middleware/requestId';
 import { auditContext } from './common/middleware/auditContext';
 import { errorHandler, notFoundHandler } from './common/errors/errorHandler';
 import { apiRouter } from './modules';
 import { logger } from './config/logger';
+import { openapiSpec } from './openapi/spec';
 
 export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
@@ -28,6 +35,18 @@ export function createApp(): Express {
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'consignment-erp-lite' });
   });
+
+  app.get('/openapi.json', (_req: Request, res: Response) => {
+    res.json(openapiSpec);
+  });
+  app.use(
+    '/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openapiSpec as never, {
+      customSiteTitle: 'Consignment ERP Lite — API Docs',
+      swaggerOptions: { persistAuthorization: true },
+    }),
+  );
 
   app.use('/api/v1', apiRouter);
 

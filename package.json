@@ -14,7 +14,9 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "db:seed": "tsx src/prisma/seed.ts"
+    "db:seed": "tsx src/prisma/seed.ts",
+    "openapi:export": "node --experimental-strip-types --no-warnings scripts/export-openapi.ts",
+    "smoke": "node --experimental-strip-types --no-warnings scripts/smoke.ts"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma",
@@ -22,6 +24,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "decimal.js": "^10.4.3",
@@ -32,6 +35,7 @@
     "morgan": "^1.10.0",
     "pino": "^9.5.0",
     "pino-pretty": "^11.3.0",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^11.0.3",
     "zod": "^3.23.8"
   },

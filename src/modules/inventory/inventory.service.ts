@@ -17,6 +17,14 @@ import {
   parseSort,
 } from '../../common/validators/common';
 import { plus, times, toDecimal } from '../../common/utils/money';
+import {
+  applyConsignmentLotDelta,
+  applyWarehouseLotDelta,
+  createOrTopUpProductionLot,
+  pickConsignmentLotsFEFO,
+  pickWarehouseLotsFEFO,
+  recordLotConsumption,
+} from './lot.service';
 
 // ---------------------------------------------------------------------------
 // Readers
@@ -212,6 +220,7 @@ export async function applyWarehouseDelta(params: {
   remark?: string | null;
   created_by?: bigint | null;
   customer_id?: bigint | null;
+  lot_id?: bigint | null;
 }): Promise<Decimal> {
   const { tx } = params;
   const bal = await lockOrCreateWarehouseBalance(
@@ -247,6 +256,7 @@ export async function applyWarehouseDelta(params: {
       warehouse_id: params.warehouse_id,
       customer_id: params.customer_id ?? null,
       product_id: params.product_id,
+      lot_id: params.lot_id ?? null,
       qty_in: params.delta.gt(0) ? params.delta.toFixed(2) : '0',
       qty_out: params.delta.lt(0) ? params.delta.abs().toFixed(2) : '0',
       balance_after: newQty.toFixed(2),
@@ -278,6 +288,7 @@ export async function applyConsignmentDelta(params: {
   remark?: string | null;
   created_by?: bigint | null;
   warehouse_id?: bigint | null;
+  lot_id?: bigint | null;
 }): Promise<Decimal> {
   const { tx } = params;
   const bal = await lockOrCreateConsignmentStock(
@@ -312,6 +323,7 @@ export async function applyConsignmentDelta(params: {
       warehouse_id: params.warehouse_id ?? null,
       customer_id: params.customer_id,
       product_id: params.product_id,
+      lot_id: params.lot_id ?? null,
       qty_in: params.delta.gt(0) ? params.delta.toFixed(2) : '0',
       qty_out: params.delta.lt(0) ? params.delta.abs().toFixed(2) : '0',
       balance_after: newQty.toFixed(2),
@@ -334,8 +346,18 @@ export async function applyConsignmentDelta(params: {
 // Public operations
 // ---------------------------------------------------------------------------
 
-type LineInput = { product_id: bigint; qty: string; unit_cost?: string; unit_price?: string };
+type LineInput = {
+  product_id: bigint;
+  qty: string;
+  unit_cost?: string;
+  unit_price?: string;
+};
 type DeltaLineInput = { product_id: bigint; delta_qty: string; unit_cost?: string };
+type ProductionLineInput = LineInput & {
+  lot_no?: string;
+  manufacturing_date?: string;
+  expiry_date?: string;
+};
 
 async function getProductsByIds(
   tx: Tx | typeof prisma,
@@ -420,7 +442,7 @@ export async function warehouseAdjustment(
 }
 
 export async function productionReceipt(
-  input: { warehouse_id: bigint; remark?: string; lines: LineInput[] },
+  input: { warehouse_id: bigint; remark?: string; lines: ProductionLineInput[] },
   user: AuthUser | undefined,
 ) {
   return withTx(async (tx) => {
@@ -434,17 +456,35 @@ export async function productionReceipt(
     const refId = BigInt(Date.now());
     for (const line of input.lines) {
       const product = products.get(line.product_id.toString())!;
+      const qty = new Decimal(line.qty);
+
+      let lotId: bigint | null = null;
+      if (line.lot_no) {
+        const lot = await createOrTopUpProductionLot(tx, {
+          product_id: line.product_id,
+          warehouse_id: input.warehouse_id,
+          qty,
+          lot_no: line.lot_no,
+          manufacturing_date: line.manufacturing_date
+            ? new Date(line.manufacturing_date)
+            : undefined,
+          expiry_date: line.expiry_date ? new Date(line.expiry_date) : undefined,
+        });
+        lotId = lot.lot_id;
+      }
+
       await applyWarehouseDelta({
         tx,
         warehouse_id: input.warehouse_id,
         product_id: line.product_id,
-        delta: new Decimal(line.qty),
+        delta: qty,
         movement_type: 'PRODUCTION_RECEIPT',
         ref_doc_type: 'PRODUCTION',
         ref_doc_id: refId,
         unit_cost: line.unit_cost ?? product.cost.toFixed(2),
         remark: input.remark,
         created_by: user?.employeeId ?? null,
+        lot_id: lotId,
       });
     }
     return { ref_doc_id: refId.toString() };
@@ -525,34 +565,57 @@ export async function loadStockToCustomer(
         : 'LOAD_TO_CUSTOMER';
       const refType: RefDocType = isReplenish ? 'REPLENISH' : 'LOAD';
 
-      // Warehouse OUT (warehouse side row only)
-      await applyWarehouseDelta({
-        tx,
+      // FEFO-pick from warehouse lot balances (empty → single null-lot pick = legacy behavior).
+      const picks = await pickWarehouseLotsFEFO(tx, {
         warehouse_id: input.warehouse_id,
         product_id: line.product_id,
-        delta: qty.negated(),
-        movement_type: moveType,
-        ref_doc_type: refType,
-        ref_doc_id: refId,
-        unit_cost: line.unit_cost ?? product.cost.toFixed(2),
-        unit_price: line.unit_price ?? product.selling_price.toFixed(2),
-        remark: input.remark,
-        created_by: user.employeeId ?? null,
+        qty,
       });
-      // Consignment IN (customer side row only)
-      await applyConsignmentDelta({
-        tx,
-        customer_id: input.customer_id,
-        product_id: line.product_id,
-        delta: qty,
-        movement_type: moveType,
-        ref_doc_type: refType,
-        ref_doc_id: refId,
-        unit_cost: line.unit_cost ?? product.cost.toFixed(2),
-        unit_price: line.unit_price ?? product.selling_price.toFixed(2),
-        remark: input.remark,
-        created_by: user.employeeId ?? null,
-      });
+
+      for (const pick of picks) {
+        if (pick.lot_id !== null) {
+          await applyWarehouseLotDelta(tx, {
+            warehouse_id: input.warehouse_id,
+            lot_id: pick.lot_id,
+            delta: pick.qty.negated(),
+          });
+          await recordLotConsumption(tx, { lot_id: pick.lot_id, qty: pick.qty });
+          await applyConsignmentLotDelta(tx, {
+            customer_id: input.customer_id,
+            lot_id: pick.lot_id,
+            delta: pick.qty,
+          });
+        }
+
+        await applyWarehouseDelta({
+          tx,
+          warehouse_id: input.warehouse_id,
+          product_id: line.product_id,
+          delta: pick.qty.negated(),
+          movement_type: moveType,
+          ref_doc_type: refType,
+          ref_doc_id: refId,
+          unit_cost: line.unit_cost ?? product.cost.toFixed(2),
+          unit_price: line.unit_price ?? product.selling_price.toFixed(2),
+          remark: input.remark,
+          created_by: user.employeeId ?? null,
+          lot_id: pick.lot_id,
+        });
+        await applyConsignmentDelta({
+          tx,
+          customer_id: input.customer_id,
+          product_id: line.product_id,
+          delta: pick.qty,
+          movement_type: moveType,
+          ref_doc_type: refType,
+          ref_doc_id: refId,
+          unit_cost: line.unit_cost ?? product.cost.toFixed(2),
+          unit_price: line.unit_price ?? product.selling_price.toFixed(2),
+          remark: input.remark,
+          created_by: user.employeeId ?? null,
+          lot_id: pick.lot_id,
+        });
+      }
     }
 
     return { ref_doc_id: refId.toString() };
@@ -583,37 +646,100 @@ export async function returnStockFromCustomer(
       const qty = new Decimal(line.qty);
       const product = products.get(line.product_id.toString());
       if (!product) throw new NotFoundError(`Product ${line.product_id} not found`);
-      // Consignment OUT (customer side row only)
-      await applyConsignmentDelta({
-        tx,
+
+      const picks = await pickConsignmentLotsFEFO(tx, {
         customer_id: input.customer_id,
         product_id: line.product_id,
-        delta: qty.negated(),
-        movement_type: 'RETURN_FROM_CUSTOMER',
-        ref_doc_type: 'RETURN',
-        ref_doc_id: refId,
-        unit_cost: line.unit_cost ?? product.cost.toFixed(2),
-        unit_price: line.unit_price ?? product.selling_price.toFixed(2),
-        remark: input.remark,
-        created_by: user?.employeeId ?? null,
+        qty,
       });
-      // Warehouse IN (warehouse side row only)
-      await applyWarehouseDelta({
-        tx,
-        warehouse_id: input.warehouse_id,
-        product_id: line.product_id,
-        delta: qty,
-        movement_type: 'RETURN_FROM_CUSTOMER',
-        ref_doc_type: 'RETURN',
-        ref_doc_id: refId,
-        unit_cost: line.unit_cost ?? product.cost.toFixed(2),
-        unit_price: line.unit_price ?? product.selling_price.toFixed(2),
-        remark: input.remark,
-        created_by: user?.employeeId ?? null,
-      });
+
+      for (const pick of picks) {
+        if (pick.lot_id !== null) {
+          await applyConsignmentLotDelta(tx, {
+            customer_id: input.customer_id,
+            lot_id: pick.lot_id,
+            delta: pick.qty.negated(),
+          });
+          await applyWarehouseLotDelta(tx, {
+            warehouse_id: input.warehouse_id,
+            lot_id: pick.lot_id,
+            delta: pick.qty,
+          });
+        }
+
+        await applyConsignmentDelta({
+          tx,
+          customer_id: input.customer_id,
+          product_id: line.product_id,
+          delta: pick.qty.negated(),
+          movement_type: 'RETURN_FROM_CUSTOMER',
+          ref_doc_type: 'RETURN',
+          ref_doc_id: refId,
+          unit_cost: line.unit_cost ?? product.cost.toFixed(2),
+          unit_price: line.unit_price ?? product.selling_price.toFixed(2),
+          remark: input.remark,
+          created_by: user?.employeeId ?? null,
+          lot_id: pick.lot_id,
+        });
+        await applyWarehouseDelta({
+          tx,
+          warehouse_id: input.warehouse_id,
+          product_id: line.product_id,
+          delta: pick.qty,
+          movement_type: 'RETURN_FROM_CUSTOMER',
+          ref_doc_type: 'RETURN',
+          ref_doc_id: refId,
+          unit_cost: line.unit_cost ?? product.cost.toFixed(2),
+          unit_price: line.unit_price ?? product.selling_price.toFixed(2),
+          remark: input.remark,
+          created_by: user?.employeeId ?? null,
+          lot_id: pick.lot_id,
+        });
+      }
     }
     return { ref_doc_id: refId.toString() };
   });
+}
+
+// ---------------------------------------------------------------------------
+// Lot readers
+// ---------------------------------------------------------------------------
+
+export async function listLots(
+  p: Pagination & {
+    warehouse_id?: bigint;
+    customer_id?: bigint;
+    product_id?: bigint;
+    expiring_before?: string;
+  },
+) {
+  const where: Prisma.ProductLotWhereInput = {};
+  if (p.product_id) where.product_id = p.product_id;
+  if (p.expiring_before) {
+    where.expiry_date = { lte: new Date(p.expiring_before) };
+  }
+
+  const includeWarehouseBalances = p.warehouse_id
+    ? { where: { warehouse_id: p.warehouse_id }, include: { warehouse: true } }
+    : { include: { warehouse: true } };
+  const includeCustomerBalances = p.customer_id
+    ? { where: { customer_id: p.customer_id }, include: { customer: true } }
+    : { include: { customer: true } };
+
+  const [data, total] = await Promise.all([
+    prisma.productLot.findMany({
+      where,
+      orderBy: [{ expiry_date: 'asc' }, { lot_id: 'asc' }],
+      include: {
+        product: true,
+        warehouseBalances: includeWarehouseBalances,
+        consignmentBalances: includeCustomerBalances,
+      },
+      ...paginate(p),
+    }),
+    prisma.productLot.count({ where }),
+  ]);
+  return { data, total, page: p.page, pageSize: p.pageSize };
 }
 
 // re-exports for clarity

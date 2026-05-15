@@ -8,3 +8,6 @@ coverage/
 .DS_Store
 .vscode/
 .idea/
+.tmp/
+frontend/.next/
+frontend/node_modules/

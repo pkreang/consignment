@@ -17,6 +17,7 @@ import { collectionRouter } from './collections/collections.routes';
 import { arRouter } from './ar/ar.routes';
 import { creditRouter } from './credit/credit.routes';
 import { reportsRouter } from './reports/reports.routes';
+import { mobileRouter } from './mobile/mobile.routes';
 
 export const apiRouter = Router();
 
@@ -39,3 +40,4 @@ apiRouter.use('/collections', collectionRouter);
 apiRouter.use('/ar', arRouter);
 apiRouter.use('/credit', creditRouter);
 apiRouter.use('/reports', reportsRouter);
+apiRouter.use('/mobile', mobileRouter);

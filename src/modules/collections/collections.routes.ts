@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../common/utils/asyncHandler';
 import { authenticate, requirePermission } from '../../common/middleware/auth';
 import { validate } from '../../common/middleware/validate';
+import { idempotency } from '../../common/middleware/idempotency';
 import { idParamSchema } from '../../common/validators/common';
 import {
   collectionCreateSchema,
@@ -33,6 +34,7 @@ collectionRouter.get(
 collectionRouter.post(
   '/',
   requirePermission('collection.write'),
+  idempotency(),
   validate({ body: collectionCreateSchema }),
   asyncHandler(async (req, res) =>
     res.status(201).json(

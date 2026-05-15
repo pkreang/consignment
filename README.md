@@ -1,6 +1,6 @@
 # Consignment ERP Lite — Backend
 
-Node.js + Express + TypeScript + Prisma + PostgreSQL backend for a consignment / van sales / route accounting ERP. Implements the eight phases of the [plan](.cursor/plans) — schema, master CRUD, stock ledger, sales-visit workflow, collections, AR, credit control, reports, and tests.
+Node.js + Express + TypeScript + Prisma + PostgreSQL backend for a consignment / van sales / route accounting ERP. Phases 1–8 implement schema + master CRUD + stock ledger + sales-visit workflow + collections + AR + credit + reports + tests. Phase 9 adds production polish: Docker, OpenAPI/Swagger, smoke script, Idempotency-Key, CSV export, FEFO lot tracking, mobile endpoints, and a Next.js admin panel.
 
 ## Stack
 - Node.js 20+
@@ -98,3 +98,69 @@ Permission codes are stable strings such as `inventory.load`, `visit.confirm`,
 Visit, invoice, and collection numbers come from Postgres sequences
 (`seq_visit_no`, `seq_invoice_no`, `seq_collection_no`) and are formatted
 `PREFIX-YYYYMM-000001` at creation time.
+
+## Phase 9 — production polish
+
+### Docker
+
+```bash
+docker compose up --build              # api + postgres, auto-migrate + seed
+docker compose --profile frontend up   # also start the Next.js admin
+```
+
+The API container runs `prisma migrate deploy` on boot, optionally seeds when
+`RUN_SEED=true`, then starts `node dist/server.js`.
+
+### OpenAPI / Swagger UI
+
+- Swagger UI: <http://localhost:3000/docs>
+- Raw JSON:   <http://localhost:3000/openapi.json>
+- Static export + Postman collection: `npm run openapi:export` writes
+  `docs/openapi.json` and `docs/postman_collection.json` for offline use.
+
+### End-to-end smoke
+
+```bash
+npm run smoke
+# or against another host:
+API=http://localhost:3000 USERNAME=admin PASSWORD=Admin@12345 npm run smoke
+```
+
+Runs login → load → visit → record → confirm → AR payment → reports.
+
+### Idempotency-Key
+
+POSTs to `/sales-visits/:id/confirm`, `/inventory/load-to-customer`,
+`/inventory/return-from-customer`, `/ar/invoices/:id/payments`, and
+`/collections` accept `Idempotency-Key: <opaque>`. The first successful response
+is cached per (key, user) and replayed on retry; reusing the key with a
+different body returns 409.
+
+### CSV export
+
+All `/api/v1/reports/*` endpoints accept `?format=csv` and return
+`text/csv` with `Content-Disposition: attachment`.
+
+### Product lot + FEFO
+
+Optional. `productionReceipt` accepts `{ lot_no, manufacturing_date, expiry_date }`
+per line; once any lot exists for a product, subsequent loads, returns,
+sale_confirmed, and replenishment movements are FEFO-split across lots
+(oldest expiry first) and stamped with `stock_movement.lot_id`. Per-location
+balances live in `warehouse_stock_lot` and `consignment_stock_lot`.
+`GET /api/v1/inventory/lots` lists lots and their per-location balances.
+
+### Mobile endpoints
+
+- `GET /api/v1/mobile/today` — today's visits for the calling rep, with the
+  customer's current consignment balance pre-joined so the device can work
+  offline after the morning sync.
+- `POST /api/v1/mobile/visits/:id/sync` — batch check-in + record-items.
+- `POST /api/v1/mobile/uploads/sign` — STUB pre-signed URL response with the
+  shape a real S3/GCS signer would return.
+
+### Frontend admin (MVP)
+
+`frontend/` is a Next.js 14 + Tailwind + React Query app with pages for login,
+dashboard, visits (list + detail), customers, products, AR aging, and credit
+risk. See `frontend/README.md`.

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { asyncHandler } from '../../common/utils/asyncHandler';
 import { authenticate, requirePermission } from '../../common/middleware/auth';
 import { validate } from '../../common/middleware/validate';
+import { idempotency } from '../../common/middleware/idempotency';
 import { idParamSchema } from '../../common/validators/common';
 import {
   checkInSchema,
@@ -69,6 +70,7 @@ salesVisitRouter.post(
 salesVisitRouter.post(
   '/:id/confirm',
   requirePermission('visit.confirm'),
+  idempotency(),
   validate({ params: idParamSchema, body: confirmSchema }),
   asyncHandler(async (req, res) =>
     res.json(

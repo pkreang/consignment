@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+*.log
+coverage
+.vscode
+.idea
+.DS_Store
+frontend/node_modules
+frontend/.next
+README.md
+docs

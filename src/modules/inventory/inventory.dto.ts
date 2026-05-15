@@ -66,10 +66,23 @@ export const adjustmentSchema = z.object({
     .min(1),
 });
 
+const productionLine = lineItem.extend({
+  lot_no: z.string().max(100).optional(),
+  manufacturing_date: z.string().datetime().optional(),
+  expiry_date: z.string().datetime().optional(),
+});
+
 export const productionReceiptSchema = z.object({
   warehouse_id: bigIntIdSchema,
   remark: z.string().max(500).optional(),
-  lines: z.array(lineItem).min(1),
+  lines: z.array(productionLine).min(1),
+});
+
+export const lotListQuery = paginationSchema.extend({
+  warehouse_id: bigIntIdSchema.optional(),
+  customer_id: bigIntIdSchema.optional(),
+  product_id: bigIntIdSchema.optional(),
+  expiring_before: z.string().datetime().optional(),
 });
 
 export const loadToCustomerSchema = z.object({
