@@ -12,6 +12,8 @@ import {
 } from '../../common/middleware/auth';
 import { writeAuditLog } from '../../database/audit';
 import { plus, toDecimal, gt, money } from '../../common/utils/money';
+import { notify } from '../../common/notifications';
+import { env } from '../../config/env';
 
 export type Exposure = {
   customer_id: string;
@@ -159,8 +161,29 @@ export async function enforceCreditLimitTx(params: {
         },
         context: { reason: 'credit_override', ...context },
       });
+      notify({
+        event: 'credit.override',
+        severity: 'critical',
+        title: `Credit override for customer ${customer_id}`,
+        body: `Override by user ${user?.username ?? 'unknown'}: ${
+          override.reason ?? '(no reason)'
+        }. limit=${exposureSnapshot.customer.credit_limit.toFixed(2)} projected=${exposureAfter.toFixed(
+          2,
+        )}`,
+        context: {
+          customer_id: customer_id.toString(),
+          ...context,
+        },
+      });
       return { exposureAfter, overridden: true };
     }
+    notify({
+      event: 'credit.limit_exceeded',
+      severity: 'critical',
+      title: `Credit limit blocked for customer ${customer_id}`,
+      body: `Attempted projected exposure ${exposureAfter.toFixed(2)} exceeded limit ${exposureSnapshot.customer.credit_limit.toFixed(2)}`,
+      context: { customer_id: customer_id.toString(), ...context },
+    });
     throw new CreditLimitExceededError(
       'Customer credit limit would be exceeded',
       {
@@ -171,6 +194,24 @@ export async function enforceCreditLimitTx(params: {
       },
     );
   }
+
+  // Soft warning when usage crosses the configured threshold.
+  const thresholdPct = env.CREDIT_ALERT_THRESHOLD_PCT;
+  if (thresholdPct > 0) {
+    const usagePct = exposureAfter
+      .dividedBy(exposureSnapshot.customer.credit_limit)
+      .times(100);
+    if (usagePct.gte(thresholdPct)) {
+      notify({
+        event: 'credit.threshold_breach',
+        severity: 'warn',
+        title: `Credit at ${usagePct.toFixed(0)}% for customer ${customer_id}`,
+        body: `Exposure ${exposureAfter.toFixed(2)} of limit ${exposureSnapshot.customer.credit_limit.toFixed(2)} (>= ${thresholdPct}% threshold).`,
+        context: { customer_id: customer_id.toString(), ...context },
+      });
+    }
+  }
+
   return { exposureAfter, overridden: false };
 }
 

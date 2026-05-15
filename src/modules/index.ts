@@ -18,6 +18,8 @@ import { arRouter } from './ar/ar.routes';
 import { creditRouter } from './credit/credit.routes';
 import { reportsRouter } from './reports/reports.routes';
 import { mobileRouter } from './mobile/mobile.routes';
+import { importsRouter } from './imports/imports.routes';
+import { notificationsRouter } from './notifications/notifications.routes';
 
 export const apiRouter = Router();
 
@@ -41,3 +43,5 @@ apiRouter.use('/ar', arRouter);
 apiRouter.use('/credit', creditRouter);
 apiRouter.use('/reports', reportsRouter);
 apiRouter.use('/mobile', mobileRouter);
+apiRouter.use('/imports', importsRouter);
+apiRouter.use('/notifications', notificationsRouter);

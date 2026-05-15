@@ -3,6 +3,7 @@ import { asyncHandler } from '../../common/utils/asyncHandler';
 import { authenticate, requirePermission } from '../../common/middleware/auth';
 import { validate } from '../../common/middleware/validate';
 import { idempotency } from '../../common/middleware/idempotency';
+import { mutationRateLimit } from '../../common/middleware/rateLimit';
 import {
   adjustmentSchema,
   consignmentStockQuery,
@@ -75,6 +76,7 @@ inventoryRouter.post(
 inventoryRouter.post(
   '/load-to-customer',
   requirePermission('inventory.load'),
+  mutationRateLimit,
   idempotency(),
   validate({ body: loadToCustomerSchema }),
   asyncHandler(async (req, res) =>
@@ -85,6 +87,7 @@ inventoryRouter.post(
 inventoryRouter.post(
   '/return-from-customer',
   requirePermission('inventory.return'),
+  mutationRateLimit,
   idempotency(),
   validate({ body: returnFromCustomerSchema }),
   asyncHandler(async (req, res) =>

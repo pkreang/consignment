@@ -25,6 +25,18 @@ const envSchema = z.object({
 
   PAGINATION_DEFAULT_PAGE_SIZE: z.coerce.number().int().positive().default(50),
   PAGINATION_MAX_PAGE_SIZE: z.coerce.number().int().positive().default(200),
+
+  // Outbound notifications (all optional).
+  NOTIFY_WEBHOOK_URL: z.string().url().optional(),
+  NOTIFY_WEBHOOK_SECRET: z.string().optional(),
+  LINE_NOTIFY_TOKEN: z.string().optional(),
+  NOTIFY_DRY_RUN: z
+    .string()
+    .optional()
+    .transform((v) => v === 'true'),
+
+  // Credit watchdog
+  CREDIT_ALERT_THRESHOLD_PCT: z.coerce.number().int().min(0).max(200).default(80),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

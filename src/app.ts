@@ -1,11 +1,13 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import pinoHttp from 'pino-http';
 import swaggerUi from 'swagger-ui-express';
 import './common/utils/json';
 import { requestId } from './common/middleware/requestId';
 import { auditContext } from './common/middleware/auditContext';
+import { metricsHandler, metricsMiddleware } from './common/middleware/metrics';
+import { globalRateLimit } from './common/middleware/rateLimit';
 import { errorHandler, notFoundHandler } from './common/errors/errorHandler';
 import { apiRouter } from './modules';
 import { logger } from './config/logger';
@@ -21,20 +23,54 @@ export function createApp(): Express {
       crossOriginEmbedderPolicy: false,
     }),
   );
-  app.use(cors());
+  app.use(cors({ exposedHeaders: ['x-request-id', 'Idempotent-Replay'] }));
+  // Capture raw CSV bodies on import endpoints; JSON for everything else.
+  app.use(express.text({ type: 'text/csv', limit: '5mb' }));
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
   app.use(requestId);
   app.use(
-    morgan(':method :url :status :res[content-length] - :response-time ms', {
-      stream: { write: (m) => logger.info(m.trim()) },
+    pinoHttp({
+      // pino-http's type for `logger` is over-narrow; the runtime accepts any
+      // standard Pino logger so we erase the type.
+      logger: logger as unknown as Parameters<typeof pinoHttp>[0] extends infer O
+        ? O extends { logger?: infer L }
+          ? L
+          : never
+        : never,
+      genReqId: (req) => (req as { id?: string }).id ?? '',
+      customLogLevel: (_req, res, err) => {
+        if (err || res.statusCode >= 500) return 'error';
+        if (res.statusCode >= 400) return 'warn';
+        return 'info';
+      },
+      serializers: {
+        req: (req) => ({
+          id: req.id,
+          method: req.method,
+          url: req.url,
+          remoteAddress: req.remoteAddress,
+        }),
+      },
     }),
   );
+  app.use(metricsMiddleware());
   app.use(auditContext);
+  app.use(globalRateLimit);
 
   app.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', service: 'consignment-erp-lite' });
   });
+  app.get('/ready', async (_req: Request, res: Response) => {
+    try {
+      const { prisma } = await import('./database/prisma');
+      await prisma.$queryRaw`SELECT 1`;
+      res.json({ status: 'ready' });
+    } catch (e) {
+      res.status(503).json({ status: 'not_ready', error: (e as Error).message });
+    }
+  });
+  app.get('/metrics', metricsHandler);
 
   app.get('/openapi.json', (_req: Request, res: Response) => {
     res.json(openapiSpec);
