@@ -1,0 +1,3 @@
+# Keeps the otherwise-empty public/ directory tracked by git.
+# The Docker Web image build copies /app/public; without this file the
+# directory is absent on a fresh checkout and the COPY step fails.
