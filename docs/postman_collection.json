@@ -1349,6 +1349,33 @@
             },
             "description": "Outstanding AR summary by customer"
           }
+        },
+        {
+          "name": "GET /api/v1/ar/invoices/{id}/pdf",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/ar/invoices/{id}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "ar",
+                "invoices",
+                ":id",
+                "pdf"
+              ]
+            },
+            "description": "Download invoice as PDF"
+          }
         }
       ]
     },
@@ -1949,38 +1976,6 @@
               }
             },
             "description": "Get a (stubbed) presigned PUT URL for visit / product photos"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Accounts Receivable",
-      "item": [
-        {
-          "name": "GET /api/v1/ar/invoices/{id}/pdf",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/ar/invoices/{id}/pdf",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "ar",
-                "invoices",
-                ":id",
-                "pdf"
-              ]
-            },
-            "description": "Download invoice as PDF"
           }
         }
       ]

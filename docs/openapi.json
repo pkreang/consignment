@@ -67,6 +67,22 @@
     {
       "name": "Mobile",
       "description": "Endpoints optimised for the van-sales mobile app"
+    },
+    {
+      "name": "Imports",
+      "description": "Bulk-upsert master data from CSV"
+    },
+    {
+      "name": "Notifications",
+      "description": "Outbound webhook / LINE Notify alerting"
+    },
+    {
+      "name": "Audit",
+      "description": "Audit log queries"
+    },
+    {
+      "name": "Ops",
+      "description": "Health, readiness, Prometheus metrics"
     }
   ],
   "paths": {
@@ -6674,7 +6690,7 @@
     "/api/v1/ar/invoices/{id}/pdf": {
       "get": {
         "tags": [
-          "Accounts Receivable"
+          "AR"
         ],
         "summary": "Download invoice as PDF",
         "security": [
