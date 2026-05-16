@@ -60,7 +60,7 @@ export const authenticate: RequestHandler = (
       permissions: decoded.permissions ?? [],
     };
     next();
-  } catch (err) {
+  } catch {
     next(new UnauthorizedError('Invalid or expired token'));
   }
 };

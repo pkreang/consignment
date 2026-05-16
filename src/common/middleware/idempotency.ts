@@ -100,7 +100,6 @@ export function idempotency() {
           if (
             !(e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002')
           ) {
-            // eslint-disable-next-line no-console
             console.warn('idempotency: failed to persist key', key, e);
           }
         });

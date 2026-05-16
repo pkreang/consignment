@@ -4,7 +4,7 @@ import {
   VisitStatus,
 } from '@prisma/client';
 import { Decimal } from 'decimal.js';
-import { prisma, Tx, withTx } from '../../database/prisma';
+import { prisma, withTx } from '../../database/prisma';
 import {
   ConflictError,
   ForbiddenError,

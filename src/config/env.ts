@@ -47,7 +47,6 @@ export function loadEnv(): AppEnv {
   if (cached) return cached;
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
-    // eslint-disable-next-line no-console
     console.error('Invalid environment variables:', parsed.error.format());
     throw new Error('Invalid environment configuration');
   }

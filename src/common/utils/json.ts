@@ -7,7 +7,6 @@ import { Prisma } from '@prisma/client';
  * convert Prisma.Decimal to a plain string, which preserves precision.
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };

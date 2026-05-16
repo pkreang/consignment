@@ -305,28 +305,21 @@ async function seedInitialStock() {
 }
 
 async function main() {
-  // eslint-disable-next-line no-console
   console.log('Seeding permissions...');
   await upsertPermissions();
-  // eslint-disable-next-line no-console
   console.log('Seeding roles...');
   await upsertRoles();
-  // eslint-disable-next-line no-console
   console.log('Seeding master data...');
   await seedMasterData();
-  // eslint-disable-next-line no-console
   console.log('Seeding admin user (username=admin / password=Admin@12345)...');
   await seedAdminUser();
-  // eslint-disable-next-line no-console
   console.log('Seeding initial warehouse stock (1000 of each SKU at MAIN)...');
   await seedInitialStock();
-  // eslint-disable-next-line no-console
   console.log('Seed complete.');
 }
 
 main()
   .catch((e) => {
-    // eslint-disable-next-line no-console
     console.error(e);
     process.exit(1);
   })
