@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { fmtDate } from '@/lib/format';
 
@@ -26,6 +27,8 @@ const colorFor = (a: AuditRow['action_type']) =>
       : 'bg-rose-100 text-rose-700';
 
 export default function AuditPage() {
+  const t = useTranslations('audit');
+  const tc = useTranslations('common');
   const [page, setPage] = useState(1);
   const [table, setTable] = useState('');
   const [action, setAction] = useState('');
@@ -40,11 +43,11 @@ export default function AuditPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Audit Log</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex gap-2">
           <input
             className="input max-w-[180px]"
-            placeholder="table name"
+            placeholder={t('tablePlaceholder')}
             value={table}
             onChange={(e) => {
               setTable(e.target.value);
@@ -59,7 +62,7 @@ export default function AuditPage() {
             }}
             className="input max-w-[140px]"
           >
-            <option value="">All actions</option>
+            <option value="">{t('allActions')}</option>
             <option>CREATE</option>
             <option>UPDATE</option>
             <option>DELETE</option>
@@ -71,18 +74,18 @@ export default function AuditPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">When</th>
-              <th className="px-3 py-2">Action</th>
-              <th className="px-3 py-2">Table</th>
-              <th className="px-3 py-2">Record</th>
-              <th className="px-3 py-2">By</th>
-              <th className="px-3 py-2">Diff</th>
+              <th className="px-3 py-2">{t('colWhen')}</th>
+              <th className="px-3 py-2">{t('colAction')}</th>
+              <th className="px-3 py-2">{t('colTable')}</th>
+              <th className="px-3 py-2">{t('colRecord')}</th>
+              <th className="px-3 py-2">{t('colBy')}</th>
+              <th className="px-3 py-2">{t('colDiff')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={6} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((row) => (
@@ -94,22 +97,22 @@ export default function AuditPage() {
                 <td className="px-3 py-2 font-mono text-xs">{row.table_name}</td>
                 <td className="px-3 py-2 font-mono text-xs">{row.record_id ?? '—'}</td>
                 <td className="px-3 py-2 text-xs">
-                  {row.changedBy?.username ?? <span className="text-slate-400">system</span>}
+                  {row.changedBy?.username ?? <span className="text-slate-400">{t('system')}</span>}
                 </td>
                 <td className="px-3 py-2">
                   <details>
-                    <summary className="cursor-pointer text-xs text-brand-600">view</summary>
+                    <summary className="cursor-pointer text-xs text-brand-600">{t('view')}</summary>
                     <div className="mt-1 grid grid-cols-1 gap-2 md:grid-cols-2">
                       <pre className="overflow-x-auto rounded bg-rose-50 p-2 text-[11px]">
-old: {JSON.stringify(row.old_value, null, 2)}
+                        {t('oldLabel')} {JSON.stringify(row.old_value, null, 2)}
                       </pre>
                       <pre className="overflow-x-auto rounded bg-emerald-50 p-2 text-[11px]">
-new: {JSON.stringify(row.new_value, null, 2)}
+                        {t('newLabel')} {JSON.stringify(row.new_value, null, 2)}
                       </pre>
                     </div>
                     {row.context ? (
                       <pre className="mt-2 overflow-x-auto rounded bg-slate-100 p-2 text-[11px]">
-context: {JSON.stringify(row.context, null, 2)}
+                        {t('contextLabel')} {JSON.stringify(row.context, null, 2)}
                       </pre>
                     ) : null}
                   </details>
@@ -122,17 +125,17 @@ context: {JSON.stringify(row.context, null, 2)}
 
       {data && (
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <div>Total: {data.total.toLocaleString()} • Page {page}</div>
+          <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
+              {tc('prev')}
             </button>
             <button
               className="btn btn-ghost"
               disabled={data.data.length < 20}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tc('next')}
             </button>
           </div>
         </div>
