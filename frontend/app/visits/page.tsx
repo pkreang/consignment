@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
 
@@ -19,6 +20,8 @@ type Visit = {
 type Page<T> = { data: T[]; total: number };
 
 export default function VisitsPage() {
+  const t = useTranslations('visits');
+  const tc = useTranslations('common');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
@@ -34,7 +37,7 @@ export default function VisitsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Sales Visits</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex items-center gap-2">
           <select
             value={status}
@@ -44,7 +47,7 @@ export default function VisitsPage() {
             }}
             className="input max-w-[180px]"
           >
-            <option value="">All statuses</option>
+            <option value="">{t('allStatuses')}</option>
             <option>DRAFT</option>
             <option>CHECKED_IN</option>
             <option>COUNTED</option>
@@ -58,19 +61,19 @@ export default function VisitsPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">Visit #</th>
-              <th className="px-3 py-2">Customer</th>
-              <th className="px-3 py-2">Sales rep</th>
-              <th className="px-3 py-2">Date</th>
-              <th className="px-3 py-2 text-right">Sales</th>
-              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">{t('colVisitNo')}</th>
+              <th className="px-3 py-2">{t('colCustomer')}</th>
+              <th className="px-3 py-2">{t('colSalesRep')}</th>
+              <th className="px-3 py-2">{t('colDate')}</th>
+              <th className="px-3 py-2 text-right">{t('colSales')}</th>
+              <th className="px-3 py-2">{t('colStatus')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
                 <td colSpan={6} className="px-3 py-4 text-sm text-slate-500">
-                  Loading…
+                  {tc('loading')}
                 </td>
               </tr>
             )}
@@ -96,7 +99,7 @@ export default function VisitsPage() {
             {data && data.data.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-500">
-                  No visits found
+                  {t('empty')}
                 </td>
               </tr>
             )}
@@ -106,23 +109,21 @@ export default function VisitsPage() {
 
       {data && (
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <div>
-            Total: {data.total.toLocaleString()} • Page {page}
-          </div>
+          <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button
               className="btn btn-ghost"
               disabled={page <= 1}
               onClick={() => setPage((p) => p - 1)}
             >
-              Prev
+              {tc('prev')}
             </button>
             <button
               className="btn btn-ghost"
               disabled={data.data.length < 20}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tc('next')}
             </button>
           </div>
         </div>

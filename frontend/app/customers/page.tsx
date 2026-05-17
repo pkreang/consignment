@@ -2,9 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { api } from '@/lib/api';
 import { fmtMoney } from '@/lib/format';
 import { Modal } from '@/components/modal';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 type Customer = {
   customer_id: string;
@@ -89,6 +91,9 @@ function toPayload(f: FormState) {
 }
 
 export default function CustomersPage() {
+  const t = useTranslations('customers');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
@@ -116,17 +121,17 @@ export default function CustomersPage() {
   const del = useMutation({
     mutationFn: (id: string) => api(`/customers/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['customers'] }),
-    onError: (e) => alert(e instanceof ApiError ? e.message : 'Delete failed'),
+    onError: (e) => alert(errorMessage(e)),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Customers</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex items-center gap-2">
           <input
             className="input max-w-xs"
-            placeholder="Search by name / code"
+            placeholder={t('searchPlaceholder')}
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -137,7 +142,7 @@ export default function CustomersPage() {
             className="btn btn-primary whitespace-nowrap"
             onClick={() => setCreating(true)}
           >
-            New Customer
+            {t('newCustomer')}
           </button>
         </div>
       </div>
@@ -146,25 +151,27 @@ export default function CustomersPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">Code</th>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2 text-right">Credit term</th>
-              <th className="px-3 py-2 text-right">Credit limit</th>
-              <th className="px-3 py-2">Active</th>
-              <th className="px-3 py-2 text-right">Actions</th>
+              <th className="px-3 py-2">{t('colCode')}</th>
+              <th className="px-3 py-2">{t('colName')}</th>
+              <th className="px-3 py-2 text-right">{t('colCreditTerm')}</th>
+              <th className="px-3 py-2 text-right">{t('colCreditLimit')}</th>
+              <th className="px-3 py-2">{t('colActive')}</th>
+              <th className="px-3 py-2 text-right">{t('colActions')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={6} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((c) => (
               <tr key={c.customer_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{c.customer_code}</td>
                 <td className="px-3 py-2 font-medium">{c.customer_name}</td>
-                <td className="px-3 py-2 text-right">{c.credit_term_days}d</td>
+                <td className="px-3 py-2 text-right">
+                  {t('creditTermDays', { days: c.credit_term_days })}
+                </td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(c.credit_limit)}</td>
                 <td className="px-3 py-2">
                   <span
@@ -173,7 +180,7 @@ export default function CustomersPage() {
                       (c.active_flag ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700')
                     }
                   >
-                    {c.active_flag ? 'Active' : 'Inactive'}
+                    {c.active_flag ? tc('active') : tc('inactive')}
                   </span>
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
@@ -181,18 +188,18 @@ export default function CustomersPage() {
                     className="btn btn-ghost px-2 py-1"
                     onClick={() => setEditing(c)}
                   >
-                    Edit
+                    {tc('edit')}
                   </button>
                   <button
                     className="btn btn-ghost px-2 py-1 text-rose-600"
                     disabled={del.isPending}
                     onClick={() => {
-                      if (confirm(`Delete ${c.customer_name}?`)) {
+                      if (confirm(t('deleteConfirm', { name: c.customer_name }))) {
                         del.mutate(c.customer_id);
                       }
                     }}
                   >
-                    Delete
+                    {tc('delete')}
                   </button>
                 </td>
               </tr>
@@ -200,7 +207,7 @@ export default function CustomersPage() {
             {data && data.data.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={6} className="px-3 py-4 text-slate-500">
-                  No customers found.
+                  {t('empty')}
                 </td>
               </tr>
             )}
@@ -210,17 +217,17 @@ export default function CustomersPage() {
 
       {data && (
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <div>Total: {data.total.toLocaleString()} • Page {page}</div>
+          <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
+              {tc('prev')}
             </button>
             <button
               className="btn btn-ghost"
               disabled={data.data.length < 20}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tc('next')}
             </button>
           </div>
         </div>
@@ -242,6 +249,9 @@ function CustomerForm({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('customers');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [form, setForm] = useState<FormState>(
     customer ? toForm(customer) : emptyForm,
   );
@@ -259,7 +269,7 @@ function CustomerForm({
             body: JSON.stringify(toPayload(form)),
           }),
     onSuccess: onSaved,
-    onError: (e) => setError(e instanceof ApiError ? e.message : 'Save failed'),
+    onError: (e) => setError(errorMessage(e)),
   });
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
@@ -269,7 +279,7 @@ function CustomerForm({
     e.preventDefault();
     setError(null);
     if (!form.customer_code.trim() || !form.customer_name.trim()) {
-      setError('Customer code and name are required.');
+      setError(t('validationRequired'));
       return;
     }
     save.mutate();
@@ -277,13 +287,13 @@ function CustomerForm({
 
   return (
     <Modal
-      title={customer ? 'Edit Customer' : 'New Customer'}
+      title={customer ? t('editCustomer') : t('newCustomer')}
       onClose={onClose}
     >
       <form className="space-y-3" onSubmit={submit}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">Customer code</label>
+            <label className="label">{t('fieldCustomerCode')}</label>
             <input
               className="input"
               value={form.customer_code}
@@ -291,7 +301,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Customer name</label>
+            <label className="label">{t('fieldCustomerName')}</label>
             <input
               className="input"
               value={form.customer_name}
@@ -301,7 +311,7 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">Owner name</label>
+            <label className="label">{t('fieldOwnerName')}</label>
             <input
               className="input"
               value={form.owner_name}
@@ -309,7 +319,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Phone</label>
+            <label className="label">{t('fieldPhone')}</label>
             <input
               className="input"
               value={form.phone}
@@ -319,7 +329,7 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">LINE ID</label>
+            <label className="label">{t('fieldLineId')}</label>
             <input
               className="input"
               value={form.line_id}
@@ -327,7 +337,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Province</label>
+            <label className="label">{t('fieldProvince')}</label>
             <input
               className="input"
               value={form.province}
@@ -336,7 +346,7 @@ function CustomerForm({
           </div>
         </div>
         <div>
-          <label className="label">Address</label>
+          <label className="label">{t('fieldAddress')}</label>
           <input
             className="input"
             value={form.address}
@@ -345,7 +355,7 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="label">Visit freq (days)</label>
+            <label className="label">{t('fieldVisitFreq')}</label>
             <input
               className="input text-right font-mono"
               inputMode="numeric"
@@ -354,7 +364,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Max capacity</label>
+            <label className="label">{t('fieldMaxCapacity')}</label>
             <input
               className="input text-right font-mono"
               inputMode="decimal"
@@ -363,7 +373,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Credit term (days)</label>
+            <label className="label">{t('fieldCreditTermDays')}</label>
             <input
               className="input text-right font-mono"
               inputMode="numeric"
@@ -373,7 +383,7 @@ function CustomerForm({
           </div>
         </div>
         <div>
-          <label className="label">Credit limit</label>
+          <label className="label">{t('fieldCreditLimit')}</label>
           <input
             className="input text-right font-mono"
             inputMode="decimal"
@@ -387,19 +397,19 @@ function CustomerForm({
             checked={form.active_flag}
             onChange={(e) => set('active_flag', e.target.checked)}
           />
-          Active
+          {tc('active')}
         </label>
         {error && <div className="text-sm text-rose-600">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {tc('cancel')}
           </button>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={save.isPending}
           >
-            {save.isPending ? 'Saving…' : 'Save'}
+            {save.isPending ? tc('saving') : tc('save')}
           </button>
         </div>
       </form>

@@ -2,10 +2,14 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, ApiError } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { login } from '@/lib/api';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('login');
+  const errorMessage = useErrorMessage();
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('Admin@12345');
   const [busy, setBusy] = useState(false);
@@ -19,7 +23,7 @@ export default function LoginPage() {
       await login(username, password);
       router.replace('/dashboard');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Login failed');
+      setError(errorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -27,13 +31,13 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-2 text-2xl font-semibold text-slate-800">Sign in</h1>
+      <h1 className="mb-2 text-2xl font-semibold text-slate-800">{t('title')}</h1>
       <p className="mb-6 text-sm text-slate-500">
-        Default admin: <span className="font-mono">admin / Admin@12345</span>
+        {t('defaultAdmin')} <span className="font-mono">admin / Admin@12345</span>
       </p>
       <form onSubmit={onSubmit} className="card space-y-4 p-6">
         <div>
-          <label className="label">Username</label>
+          <label className="label">{t('username')}</label>
           <input
             className="input"
             value={username}
@@ -42,7 +46,7 @@ export default function LoginPage() {
           />
         </div>
         <div>
-          <label className="label">Password</label>
+          <label className="label">{t('password')}</label>
           <input
             type="password"
             className="input"
@@ -56,7 +60,7 @@ export default function LoginPage() {
           </div>
         )}
         <button className="btn btn-primary w-full" disabled={busy} type="submit">
-          {busy ? 'Signing in…' : 'Sign in'}
+          {busy ? t('submitting') : t('submit')}
         </button>
       </form>
     </div>

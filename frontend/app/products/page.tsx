@@ -2,9 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { api } from '@/lib/api';
 import { fmtMoney } from '@/lib/format';
 import { Modal } from '@/components/modal';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 type Product = {
   product_id: string;
@@ -79,6 +81,9 @@ function toPayload(f: FormState) {
 }
 
 export default function ProductsPage() {
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const qc = useQueryClient();
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
@@ -106,17 +111,17 @@ export default function ProductsPage() {
   const del = useMutation({
     mutationFn: (id: string) => api(`/products/${id}`, { method: 'DELETE' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }),
-    onError: (e) => alert(e instanceof ApiError ? e.message : 'Delete failed'),
+    onError: (e) => alert(errorMessage(e)),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Products</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex items-center gap-2">
           <input
             className="input max-w-xs"
-            placeholder="Search by SKU / name"
+            placeholder={t('searchPlaceholder')}
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
@@ -127,7 +132,7 @@ export default function ProductsPage() {
             className="btn btn-primary whitespace-nowrap"
             onClick={() => setCreating(true)}
           >
-            New Product
+            {t('newProduct')}
           </button>
         </div>
       </div>
@@ -136,20 +141,20 @@ export default function ProductsPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">SKU</th>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Unit</th>
-              <th className="px-3 py-2 text-right">Cost</th>
-              <th className="px-3 py-2 text-right">Price</th>
-              <th className="px-3 py-2 text-right">Min</th>
-              <th className="px-3 py-2 text-right">Max</th>
-              <th className="px-3 py-2 text-right">Actions</th>
+              <th className="px-3 py-2">{t('colSku')}</th>
+              <th className="px-3 py-2">{t('colName')}</th>
+              <th className="px-3 py-2">{t('colUnit')}</th>
+              <th className="px-3 py-2 text-right">{t('colCost')}</th>
+              <th className="px-3 py-2 text-right">{t('colPrice')}</th>
+              <th className="px-3 py-2 text-right">{t('colMin')}</th>
+              <th className="px-3 py-2 text-right">{t('colMax')}</th>
+              <th className="px-3 py-2 text-right">{t('colActions')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={8} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((p) => (
@@ -166,18 +171,18 @@ export default function ProductsPage() {
                     className="btn btn-ghost px-2 py-1"
                     onClick={() => setEditing(p)}
                   >
-                    Edit
+                    {tc('edit')}
                   </button>
                   <button
                     className="btn btn-ghost px-2 py-1 text-rose-600"
                     disabled={del.isPending}
                     onClick={() => {
-                      if (confirm(`Delete ${p.product_name}?`)) {
+                      if (confirm(t('deleteConfirm', { name: p.product_name }))) {
                         del.mutate(p.product_id);
                       }
                     }}
                   >
-                    Delete
+                    {tc('delete')}
                   </button>
                 </td>
               </tr>
@@ -185,7 +190,7 @@ export default function ProductsPage() {
             {data && data.data.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={8} className="px-3 py-4 text-slate-500">
-                  No products found.
+                  {t('empty')}
                 </td>
               </tr>
             )}
@@ -195,17 +200,17 @@ export default function ProductsPage() {
 
       {data && (
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <div>Total: {data.total.toLocaleString()} • Page {page}</div>
+          <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
+              {tc('prev')}
             </button>
             <button
               className="btn btn-ghost"
               disabled={data.data.length < 20}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tc('next')}
             </button>
           </div>
         </div>
@@ -227,6 +232,9 @@ function ProductForm({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [form, setForm] = useState<FormState>(
     product ? toForm(product) : emptyForm,
   );
@@ -244,7 +252,7 @@ function ProductForm({
             body: JSON.stringify(toPayload(form)),
           }),
     onSuccess: onSaved,
-    onError: (e) => setError(e instanceof ApiError ? e.message : 'Save failed'),
+    onError: (e) => setError(errorMessage(e)),
   });
 
   const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
@@ -254,18 +262,18 @@ function ProductForm({
     e.preventDefault();
     setError(null);
     if (!form.sku_code.trim() || !form.product_name.trim()) {
-      setError('SKU code and product name are required.');
+      setError(t('validationRequired'));
       return;
     }
     save.mutate();
   };
 
   return (
-    <Modal title={product ? 'Edit Product' : 'New Product'} onClose={onClose}>
+    <Modal title={product ? t('editProduct') : t('newProduct')} onClose={onClose}>
       <form className="space-y-3" onSubmit={submit}>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">SKU code</label>
+            <label className="label">{t('fieldSkuCode')}</label>
             <input
               className="input"
               value={form.sku_code}
@@ -273,7 +281,7 @@ function ProductForm({
             />
           </div>
           <div>
-            <label className="label">Barcode</label>
+            <label className="label">{t('fieldBarcode')}</label>
             <input
               className="input"
               value={form.barcode}
@@ -282,7 +290,7 @@ function ProductForm({
           </div>
         </div>
         <div>
-          <label className="label">Product name</label>
+          <label className="label">{t('fieldProductName')}</label>
           <input
             className="input"
             value={form.product_name}
@@ -291,7 +299,7 @@ function ProductForm({
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="label">Unit</label>
+            <label className="label">{t('fieldUnit')}</label>
             <input
               className="input"
               value={form.unit}
@@ -299,7 +307,7 @@ function ProductForm({
             />
           </div>
           <div>
-            <label className="label">Cost</label>
+            <label className="label">{t('fieldCost')}</label>
             <input
               className="input text-right font-mono"
               inputMode="decimal"
@@ -308,7 +316,7 @@ function ProductForm({
             />
           </div>
           <div>
-            <label className="label">Selling price</label>
+            <label className="label">{t('fieldSellingPrice')}</label>
             <input
               className="input text-right font-mono"
               inputMode="decimal"
@@ -319,7 +327,7 @@ function ProductForm({
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="label">Min stock</label>
+            <label className="label">{t('fieldMinStock')}</label>
             <input
               className="input text-right font-mono"
               inputMode="decimal"
@@ -328,7 +336,7 @@ function ProductForm({
             />
           </div>
           <div>
-            <label className="label">Max stock</label>
+            <label className="label">{t('fieldMaxStock')}</label>
             <input
               className="input text-right font-mono"
               inputMode="decimal"
@@ -337,7 +345,7 @@ function ProductForm({
             />
           </div>
           <div>
-            <label className="label">Shelf life (days)</label>
+            <label className="label">{t('fieldShelfLife')}</label>
             <input
               className="input text-right font-mono"
               inputMode="numeric"
@@ -352,19 +360,19 @@ function ProductForm({
             checked={form.active_flag}
             onChange={(e) => set('active_flag', e.target.checked)}
           />
-          Active
+          {tc('active')}
         </label>
         {error && <div className="text-sm text-rose-600">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {tc('cancel')}
           </button>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={save.isPending}
           >
-            {save.isPending ? 'Saving…' : 'Save'}
+            {save.isPending ? tc('saving') : tc('save')}
           </button>
         </div>
       </form>

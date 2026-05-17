@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function Modal({
   title,
@@ -11,6 +12,8 @@ export function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const tc = useTranslations('common');
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -34,7 +37,7 @@ export function Modal({
             type="button"
             className="btn btn-ghost px-2 py-1"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={tc('close')}
           >
             ✕
           </button>

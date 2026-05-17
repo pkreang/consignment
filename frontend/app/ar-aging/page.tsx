@@ -2,8 +2,10 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { api } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 type Invoice = {
   ar_invoice_id: string;
@@ -30,6 +32,8 @@ const API_BASE =
     : '/api/v1';
 
 export default function ArAgingPage() {
+  const t = useTranslations('arAging');
+  const tc = useTranslations('common');
   const { data, isLoading } = useQuery({
     queryKey: ['ar-aging'],
     queryFn: () => api<AgingPayload>('/reports/ar-aging'),
@@ -38,7 +42,7 @@ export default function ArAgingPage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-semibold">Accounts Receivable Aging</h1>
+      <h1 className="text-2xl font-semibold">{t('title')}</h1>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {BUCKETS.map((b) => {
@@ -47,7 +51,9 @@ export default function ArAgingPage() {
             <div key={b} className="card p-4">
               <div className="text-xs uppercase tracking-wider text-slate-500">{b}</div>
               <div className="mt-1 text-xl font-semibold">{fmtMoney(row?.amount ?? '0')}</div>
-              <div className="text-xs text-slate-500">{row?.count ?? 0} invoices</div>
+              <div className="text-xs text-slate-500">
+                {t('invoiceCount', { count: row?.count ?? 0 })}
+              </div>
             </div>
           );
         })}
@@ -57,14 +63,14 @@ export default function ArAgingPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">Invoice #</th>
-              <th className="px-3 py-2">Customer</th>
-              <th className="px-3 py-2">Issued</th>
-              <th className="px-3 py-2">Due</th>
-              <th className="px-3 py-2 text-right">Total</th>
-              <th className="px-3 py-2 text-right">Outstanding</th>
-              <th className="px-3 py-2">Bucket</th>
-              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">{t('colInvoiceNo')}</th>
+              <th className="px-3 py-2">{t('colCustomer')}</th>
+              <th className="px-3 py-2">{t('colIssued')}</th>
+              <th className="px-3 py-2">{t('colDue')}</th>
+              <th className="px-3 py-2 text-right">{t('colTotal')}</th>
+              <th className="px-3 py-2 text-right">{t('colOutstanding')}</th>
+              <th className="px-3 py-2">{t('colBucket')}</th>
+              <th className="px-3 py-2">{t('colStatus')}</th>
               <th className="px-3 py-2"></th>
             </tr>
           </thead>
@@ -72,7 +78,7 @@ export default function ArAgingPage() {
             {isLoading && (
               <tr>
                 <td colSpan={9} className="px-3 py-4 text-slate-500">
-                  Loading…
+                  {tc('loading')}
                 </td>
               </tr>
             )}
@@ -104,7 +110,7 @@ export default function ArAgingPage() {
                 <td className="px-3 py-2 text-right">
                   {Number(inv.outstanding_amount) > 0 && (
                     <button className="btn btn-ghost px-2 py-1 text-xs" onClick={() => setPaying(inv)}>
-                      Record payment
+                      {t('recordPayment')}
                     </button>
                   )}
                 </td>
@@ -125,6 +131,9 @@ export default function ArAgingPage() {
 }
 
 function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
+  const t = useTranslations('arAging');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const qc = useQueryClient();
   const [amount, setAmount] = useState(inv.outstanding_amount);
   const [method, setMethod] = useState<'CASH' | 'BANK_TRANSFER' | 'QR_PAYMENT' | 'OTHER'>('BANK_TRANSFER');
@@ -156,16 +165,19 @@ function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
         className="card w-full max-w-md space-y-3 p-5 text-sm"
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold">Record payment — {inv.invoice_no}</h3>
+        <h3 className="text-lg font-semibold">
+          {t('payModalTitle', { invoiceNo: inv.invoice_no })}
+        </h3>
         <div className="text-slate-600">
-          Outstanding: <span className="font-medium">{fmtMoney(inv.outstanding_amount)} THB</span>
+          {t('outstandingLabel')}{' '}
+          <span className="font-medium">{fmtMoney(inv.outstanding_amount)} THB</span>
         </div>
         <div>
-          <label className="label">Amount</label>
+          <label className="label">{t('amount')}</label>
           <input className="input" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div>
-          <label className="label">Method</label>
+          <label className="label">{t('method')}</label>
           <select className="input" value={method} onChange={(e) => setMethod(e.target.value as never)}>
             <option>CASH</option>
             <option>BANK_TRANSFER</option>
@@ -174,20 +186,20 @@ function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
           </select>
         </div>
         <div>
-          <label className="label">Reference</label>
+          <label className="label">{t('reference')}</label>
           <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
         </div>
         {m.error && (
           <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {m.error instanceof ApiError ? m.error.message : 'Failed'}
+            {errorMessage(m.error)}
           </div>
         )}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {tc('cancel')}
           </button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>
-            {m.isPending ? 'Saving…' : 'Record payment'}
+            {m.isPending ? tc('saving') : t('recordPayment')}
           </button>
         </div>
       </div>

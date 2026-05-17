@@ -3,21 +3,24 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { isAuthed, logout } from '@/lib/api';
+import { LocaleSwitcher } from '@/components/locale-switcher';
 
 const items = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/visits', label: 'Visits' },
-  { href: '/customers', label: 'Customers' },
-  { href: '/products', label: 'Products' },
-  { href: '/ar-aging', label: 'AR Aging' },
-  { href: '/credit-risk', label: 'Credit Risk' },
-  { href: '/audit', label: 'Audit Log' },
-];
+  { href: '/dashboard', key: 'dashboard' },
+  { href: '/visits', key: 'visits' },
+  { href: '/customers', key: 'customers' },
+  { href: '/products', key: 'products' },
+  { href: '/ar-aging', key: 'arAging' },
+  { href: '/credit-risk', key: 'creditRisk' },
+  { href: '/audit', key: 'audit' },
+] as const;
 
 export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations('nav');
   const [authed, setAuthed] = useState(false);
   useEffect(() => setAuthed(isAuthed()), [pathname]);
 
@@ -27,7 +30,7 @@ export function Nav() {
     <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex max-w-screen-xl items-center gap-6 px-4 py-3">
         <Link href="/dashboard" className="text-base font-semibold text-brand-600">
-          Consignment ERP
+          {t('brand')}
         </Link>
         <nav className="flex flex-1 gap-1">
           {items.map((it) => {
@@ -43,11 +46,12 @@ export function Nav() {
                     : 'text-slate-600 hover:bg-slate-100')
                 }
               >
-                {it.label}
+                {t(it.key)}
               </Link>
             );
           })}
         </nav>
+        <LocaleSwitcher />
         {authed ? (
           <button
             type="button"
@@ -57,11 +61,11 @@ export function Nav() {
             }}
             className="btn btn-ghost"
           >
-            Sign out
+            {t('signOut')}
           </button>
         ) : (
           <Link href="/login" className="btn btn-primary">
-            Sign in
+            {t('signIn')}
           </Link>
         )}
       </div>
