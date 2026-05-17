@@ -61,6 +61,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - run: npm run check:i18n
       - run: npx tsc --noEmit
       - run: NEXT_TELEMETRY_DISABLED=1 npx next build
 
