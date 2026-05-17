@@ -1,5 +1,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import { Providers } from '@/components/providers';
 import { Nav } from '@/components/nav';
 
@@ -8,18 +10,22 @@ export const metadata: Metadata = {
   description: 'Admin panel for the Consignment / Van Sales backend',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
-        <Providers>
-          <Nav />
-          <main className="mx-auto max-w-screen-xl px-4 py-6">{children}</main>
-        </Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            <Nav />
+            <main className="mx-auto max-w-screen-xl px-4 py-6">{children}</main>
+          </Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
