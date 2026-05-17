@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { fmtMoney } from '@/lib/format';
 
@@ -20,6 +21,8 @@ type Product = {
 type Page<T> = { data: T[]; total: number };
 
 export default function ProductsPage() {
+  const t = useTranslations('products');
+  const tc = useTranslations('common');
   const [q, setQ] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading } = useQuery({
@@ -32,10 +35,10 @@ export default function ProductsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Products</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <input
           className="input max-w-xs"
-          placeholder="Search by SKU / name"
+          placeholder={t('searchPlaceholder')}
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
@@ -48,19 +51,19 @@ export default function ProductsPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">SKU</th>
-              <th className="px-3 py-2">Name</th>
-              <th className="px-3 py-2">Unit</th>
-              <th className="px-3 py-2 text-right">Cost</th>
-              <th className="px-3 py-2 text-right">Price</th>
-              <th className="px-3 py-2 text-right">Min</th>
-              <th className="px-3 py-2 text-right">Max</th>
+              <th className="px-3 py-2">{t('colSku')}</th>
+              <th className="px-3 py-2">{t('colName')}</th>
+              <th className="px-3 py-2">{t('colUnit')}</th>
+              <th className="px-3 py-2 text-right">{t('colCost')}</th>
+              <th className="px-3 py-2 text-right">{t('colPrice')}</th>
+              <th className="px-3 py-2 text-right">{t('colMin')}</th>
+              <th className="px-3 py-2 text-right">{t('colMax')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={7} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((p) => (
@@ -80,17 +83,17 @@ export default function ProductsPage() {
 
       {data && (
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <div>Total: {data.total.toLocaleString()} • Page {page}</div>
+          <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-              Prev
+              {tc('prev')}
             </button>
             <button
               className="btn btn-ghost"
               disabled={data.data.length < 20}
               onClick={() => setPage((p) => p + 1)}
             >
-              Next
+              {tc('next')}
             </button>
           </div>
         </div>
