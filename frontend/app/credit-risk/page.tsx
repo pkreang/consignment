@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { fmtMoney } from '@/lib/format';
 
@@ -18,6 +19,8 @@ type Row = {
 };
 
 export default function CreditRiskPage() {
+  const t = useTranslations('creditRisk');
+  const tc = useTranslations('common');
   const [threshold, setThreshold] = useState(80);
   const { data, isLoading } = useQuery({
     queryKey: ['credit-risk', threshold],
@@ -28,9 +31,9 @@ export default function CreditRiskPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Credit Risk</h1>
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <label className="flex items-center gap-2 text-sm text-slate-600">
-          Threshold (%)
+          {t('threshold')}
           <input
             type="number"
             min={0}
@@ -46,19 +49,19 @@ export default function CreditRiskPage() {
         <table className="w-full">
           <thead>
             <tr className="table-head">
-              <th className="px-3 py-2">Customer</th>
-              <th className="px-3 py-2 text-right">Credit limit</th>
-              <th className="px-3 py-2 text-right">AR outstanding</th>
-              <th className="px-3 py-2 text-right">Consignment value</th>
-              <th className="px-3 py-2 text-right">Total exposure</th>
-              <th className="px-3 py-2 text-right">Available</th>
-              <th className="px-3 py-2 text-right">Usage %</th>
+              <th className="px-3 py-2">{t('colCustomer')}</th>
+              <th className="px-3 py-2 text-right">{t('colCreditLimit')}</th>
+              <th className="px-3 py-2 text-right">{t('colArOutstanding')}</th>
+              <th className="px-3 py-2 text-right">{t('colConsignmentValue')}</th>
+              <th className="px-3 py-2 text-right">{t('colTotalExposure')}</th>
+              <th className="px-3 py-2 text-right">{t('colAvailable')}</th>
+              <th className="px-3 py-2 text-right">{t('colUsage')}</th>
             </tr>
           </thead>
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td>
+                <td colSpan={7} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
               </tr>
             )}
             {rows.map((r) => (
@@ -93,7 +96,7 @@ export default function CreditRiskPage() {
             {rows.length === 0 && !isLoading && (
               <tr>
                 <td colSpan={7} className="px-3 py-6 text-center text-sm text-slate-500">
-                  No customers above the threshold.
+                  {t('empty')}
                 </td>
               </tr>
             )}
