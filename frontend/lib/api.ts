@@ -13,10 +13,12 @@ const API_BASE =
 export class ApiError extends Error {
   status: number;
   body: unknown;
-  constructor(status: number, message: string, body: unknown) {
+  code?: string;
+  constructor(status: number, message: string, body: unknown, code?: string) {
     super(message);
     this.status = status;
     this.body = body;
+    this.code = code;
   }
 }
 
@@ -55,10 +57,10 @@ export async function api<T = unknown>(
         window.location.href = '/login';
       }
     }
-    const message =
-      ((body as { error?: { message?: string } } | null)?.error?.message ??
-        res.statusText) || `HTTP ${res.status}`;
-    throw new ApiError(res.status, message, body);
+    const errorBody = (body as { error?: { message?: string; code?: string } } | null)
+      ?.error;
+    const message = (errorBody?.message ?? res.statusText) || `HTTP ${res.status}`;
+    throw new ApiError(res.status, message, body, errorBody?.code);
   }
   return body as T;
 }
