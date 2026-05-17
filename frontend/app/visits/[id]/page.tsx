@@ -3,8 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
-import { api, ApiError } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { api } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
+import { useErrorMessage } from '@/lib/use-error-message';
 
 type VisitItem = {
   visit_item_id: string;
@@ -38,6 +40,8 @@ const API_BASE =
 export default function VisitDetailPage() {
   const params = useParams<{ id: string }>();
   const qc = useQueryClient();
+  const t = useTranslations('visits');
+  const tc = useTranslations('common');
   const { data } = useQuery({
     queryKey: ['visit', params.id],
     queryFn: () => api<VisitDetail>(`/sales-visits/${params.id}`),
@@ -46,7 +50,7 @@ export default function VisitDetailPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showItems, setShowItems] = useState(false);
 
-  if (!data) return <div className="card p-6">Loading…</div>;
+  if (!data) return <div className="card p-6">{tc('loading')}</div>;
   const canConfirm = data.visit_status === 'CHECKED_IN' || data.visit_status === 'COUNTED';
   const canRecord = canConfirm || data.visit_status === 'DRAFT';
 
@@ -54,7 +58,7 @@ export default function VisitDetailPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold">Visit {data.visit_no}</h1>
+          <h1 className="text-2xl font-semibold">{t('detailTitle', { visitNo: data.visit_no })}</h1>
           <span className={`pill ${pillForStatus(data.visit_status)}`}>{data.visit_status}</span>
         </div>
         <div className="flex items-center gap-2">
@@ -64,42 +68,42 @@ export default function VisitDetailPage() {
             target="_blank"
             rel="noreferrer"
           >
-            Download PDF
+            {t('downloadPdf')}
           </a>
           {canRecord && (
             <button className="btn btn-ghost" onClick={() => setShowItems(true)}>
-              Record items
+              {t('recordItems')}
             </button>
           )}
           {canConfirm && (
             <button className="btn btn-primary" onClick={() => setShowConfirm(true)}>
-              Confirm visit
+              {t('confirmVisit')}
             </button>
           )}
         </div>
       </div>
 
       <div className="card grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
-        <Field label="Customer">{data.customer?.customer_name}</Field>
-        <Field label="Sales rep">{data.employee?.employee_name}</Field>
-        <Field label="Visit date">{fmtDate(data.visit_date)}</Field>
-        <Field label="Total sales">{fmtMoney(data.total_sales_amount)} THB</Field>
+        <Field label={t('colCustomer')}>{data.customer?.customer_name}</Field>
+        <Field label={t('colSalesRep')}>{data.employee?.employee_name}</Field>
+        <Field label={t('fieldVisitDate')}>{fmtDate(data.visit_date)}</Field>
+        <Field label={t('fieldTotalSales')}>{fmtMoney(data.total_sales_amount)} THB</Field>
       </div>
 
       <section>
-        <h2 className="mb-2 text-lg font-medium">Items</h2>
+        <h2 className="mb-2 text-lg font-medium">{t('sectionItems')}</h2>
         <div className="card overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="table-head">
-                <th className="px-3 py-2">SKU</th>
-                <th className="px-3 py-2">Product</th>
-                <th className="px-3 py-2 text-right">Before</th>
-                <th className="px-3 py-2 text-right">Counted</th>
-                <th className="px-3 py-2 text-right">Sold</th>
-                <th className="px-3 py-2 text-right">Replenished</th>
-                <th className="px-3 py-2 text-right">Price</th>
-                <th className="px-3 py-2 text-right">Sales</th>
+                <th className="px-3 py-2">{t('colSku')}</th>
+                <th className="px-3 py-2">{t('colProduct')}</th>
+                <th className="px-3 py-2 text-right">{t('colBefore')}</th>
+                <th className="px-3 py-2 text-right">{t('colCounted')}</th>
+                <th className="px-3 py-2 text-right">{t('colSold')}</th>
+                <th className="px-3 py-2 text-right">{t('colReplenished')}</th>
+                <th className="px-3 py-2 text-right">{t('colPrice')}</th>
+                <th className="px-3 py-2 text-right">{t('colSales')}</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +126,7 @@ export default function VisitDetailPage() {
 
       {!!data.collections?.length && (
         <section>
-          <h2 className="mb-2 text-lg font-medium">Collections</h2>
+          <h2 className="mb-2 text-lg font-medium">{t('sectionCollections')}</h2>
           <ul className="card divide-y text-sm">
             {data.collections.map((c) => (
               <li key={c.collection_no} className="flex items-center justify-between px-4 py-2">
@@ -137,7 +141,7 @@ export default function VisitDetailPage() {
 
       {!!data.arInvoices?.length && (
         <section>
-          <h2 className="mb-2 text-lg font-medium">AR Invoices</h2>
+          <h2 className="mb-2 text-lg font-medium">{t('sectionArInvoices')}</h2>
           <ul className="card divide-y text-sm">
             {data.arInvoices.map((inv) => (
               <li key={inv.invoice_no} className="flex items-center justify-between px-4 py-2">
@@ -196,18 +200,21 @@ function ConfirmDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const t = useTranslations('visits');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const isCod = visit.customer.credit_term_days === 0;
+  const hasReplenish = visit.items.some((it) => Number(it.qty_replenished) > 0);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'BANK_TRANSFER' | 'QR_PAYMENT' | 'OTHER'>('CASH');
   const [amount, setAmount] = useState(isCod ? visit.total_sales_amount : '0');
   const [reference, setReference] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   const m = useMutation({
     mutationFn: async () => {
       const body: Record<string, unknown> = {};
-      const hasReplenish = visit.items.some((it) => Number(it.qty_replenished) > 0);
       if (hasReplenish) {
-        if (!warehouseId) throw new Error('warehouse_id is required when replenishing');
         body.warehouse_id = warehouseId;
       }
       if (Number(amount) > 0 || isCod) {
@@ -228,26 +235,39 @@ function ConfirmDialog({
     },
   });
 
+  function submit() {
+    if (hasReplenish && !warehouseId) {
+      setFormError(t('warehouseRequired'));
+      return;
+    }
+    setFormError(null);
+    m.mutate();
+  }
+
   return (
-    <Modal title={`Confirm visit ${visit.visit_no}`} onClose={onClose}>
+    <Modal title={t('confirmModalTitle', { visitNo: visit.visit_no })} onClose={onClose}>
       <div className="space-y-3 text-sm">
         <p className="text-slate-600">
-          Total sales: <span className="font-medium">{fmtMoney(visit.total_sales_amount)} THB</span>
-          {isCod && <span className="ml-2 text-xs text-amber-600">COD — full payment required</span>}
+          {t('totalSalesLabel')}{' '}
+          <span className="font-medium">{fmtMoney(visit.total_sales_amount)} THB</span>
+          {isCod && <span className="ml-2 text-xs text-amber-600">{t('codNote')}</span>}
         </p>
-        {visit.items.some((it) => Number(it.qty_replenished) > 0) && (
+        {hasReplenish && (
           <div>
-            <label className="label">Warehouse id (for replenishment)</label>
+            <label className="label">{t('warehouseLabel')}</label>
             <input
               className="input"
               value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-              placeholder="e.g. 1"
+              onChange={(e) => {
+                setWarehouseId(e.target.value);
+                setFormError(null);
+              }}
+              placeholder={t('warehousePlaceholder')}
             />
           </div>
         )}
         <div>
-          <label className="label">Payment method</label>
+          <label className="label">{t('paymentMethod')}</label>
           <select
             className="input"
             value={paymentMethod}
@@ -260,7 +280,7 @@ function ConfirmDialog({
           </select>
         </div>
         <div>
-          <label className="label">Amount collected</label>
+          <label className="label">{t('amountCollected')}</label>
           <input
             type="text"
             inputMode="decimal"
@@ -270,24 +290,20 @@ function ConfirmDialog({
           />
         </div>
         <div>
-          <label className="label">Reference</label>
+          <label className="label">{t('reference')}</label>
           <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
         </div>
-        {m.error && (
+        {(formError || m.error) && (
           <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {m.error instanceof ApiError ? m.error.message : 'Failed'}
+            {formError ?? errorMessage(m.error)}
           </div>
         )}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {tc('cancel')}
           </button>
-          <button
-            className="btn btn-primary"
-            disabled={m.isPending}
-            onClick={() => m.mutate()}
-          >
-            {m.isPending ? 'Working…' : 'Confirm'}
+          <button className="btn btn-primary" disabled={m.isPending} onClick={submit}>
+            {m.isPending ? tc('working') : t('confirm')}
           </button>
         </div>
       </div>
@@ -304,6 +320,9 @@ function RecordItemsDialog({
   onClose: () => void;
   onDone: () => void;
 }) {
+  const t = useTranslations('visits');
+  const tc = useTranslations('common');
+  const errorMessage = useErrorMessage();
   const [items, setItems] = useState(() =>
     visit.items.map((it) => ({
       product_id: it.product_id,
@@ -332,15 +351,15 @@ function RecordItemsDialog({
     },
   });
   return (
-    <Modal title={`Record items — ${visit.visit_no}`} onClose={onClose}>
+    <Modal title={t('recordModalTitle', { visitNo: visit.visit_no })} onClose={onClose}>
       <div className="space-y-3">
         <table className="w-full text-sm">
           <thead>
             <tr className="table-head">
-              <th className="py-1 text-left">SKU</th>
-              <th className="py-1 text-right">Counted</th>
-              <th className="py-1 text-right">Replenish</th>
-              <th className="py-1 text-right">Price</th>
+              <th className="py-1 text-left">{t('colSku')}</th>
+              <th className="py-1 text-right">{t('colCounted')}</th>
+              <th className="py-1 text-right">{t('colReplenish')}</th>
+              <th className="py-1 text-right">{t('colPrice')}</th>
             </tr>
           </thead>
           <tbody>
@@ -386,15 +405,15 @@ function RecordItemsDialog({
         </table>
         {m.error && (
           <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {m.error instanceof ApiError ? m.error.message : 'Failed'}
+            {errorMessage(m.error)}
           </div>
         )}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>
-            Cancel
+            {tc('cancel')}
           </button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>
-            {m.isPending ? 'Saving…' : 'Save items'}
+            {m.isPending ? tc('saving') : t('saveItems')}
           </button>
         </div>
       </div>
