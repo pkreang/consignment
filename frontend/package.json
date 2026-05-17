@@ -6,11 +6,13 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3000",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:i18n": "node scripts/check-messages.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.49.0",
     "next": "14.2.5",
+    "next-intl": "^3.26.5",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
