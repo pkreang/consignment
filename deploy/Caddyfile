@@ -1,0 +1,21 @@
+{
+    email {$ACME_EMAIL:admin@example.com}
+}
+
+# Single-domain mode: frontend at /, backend at /api/* and ops endpoints.
+# Set APP_DOMAIN env to a real domain for automatic Let's Encrypt TLS.
+# Falls back to :80 for IP-only / pre-DNS testing.
+{$APP_DOMAIN::80} {
+    encode gzip
+
+    @backend {
+        path /api/* /docs /docs/* /openapi.json /health /ready /metrics
+    }
+    handle @backend {
+        reverse_proxy api:3000
+    }
+
+    handle {
+        reverse_proxy frontend:3000
+    }
+}

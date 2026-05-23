@@ -30,5 +30,26 @@ fi
 echo "==> retention: deleting backups older than $RETENTION_DAYS days"
 find "$BACKUP_DIR" -name 'consignment-*.sql.gz' -mtime "+${RETENTION_DAYS}" -delete
 
-echo "==> done. current backups:"
+# Upload to Oracle Object Storage if oci-cli is configured. Skipped silently
+# when OCI_BACKUP_BUCKET is unset (e.g. local dev runs).
+if [ -n "${OCI_BACKUP_BUCKET:-}" ] && command -v oci >/dev/null 2>&1; then
+  echo "==> upload to oci://$OCI_BACKUP_BUCKET/$(basename "$OUT")"
+  oci os object put \
+      --bucket-name "$OCI_BACKUP_BUCKET" \
+      --name "$(basename "$OUT")" \
+      --file "$OUT" \
+      --force >/dev/null
+
+  echo "==> bucket retention: deleting objects older than $RETENTION_DAYS days"
+  CUTOFF="$(date -u -d "${RETENTION_DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)"
+  oci os object list --bucket-name "$OCI_BACKUP_BUCKET" --all \
+      --query "data[?\"time-created\" < '$CUTOFF'].name" --raw-output 2>/dev/null \
+    | jq -r '.[]?' \
+    | while read -r obj; do
+        [ -z "$obj" ] && continue
+        oci os object delete --bucket-name "$OCI_BACKUP_BUCKET" --name "$obj" --force >/dev/null
+      done
+fi
+
+echo "==> done. current local backups:"
 ls -lh "$BACKUP_DIR" | tail -20
