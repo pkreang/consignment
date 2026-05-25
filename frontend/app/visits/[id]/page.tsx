@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation';
 import { useState } from 'react';
 import { api, ApiError } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
+import { useWarehouses } from '@/lib/lookups';
+import { Modal } from '@/components/modal';
 
 type VisitItem = {
   visit_item_id: string;
@@ -45,10 +47,18 @@ export default function VisitDetailPage() {
 
   const [showConfirm, setShowConfirm] = useState(false);
   const [showItems, setShowItems] = useState(false);
+  const [showCheckin, setShowCheckin] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ['visit', params.id] });
 
   if (!data) return <div className="card p-6">Loading…</div>;
+  const isDraft = data.visit_status === 'DRAFT';
   const canConfirm = data.visit_status === 'CHECKED_IN' || data.visit_status === 'COUNTED';
-  const canRecord = canConfirm || data.visit_status === 'DRAFT';
+  const canRecord = canConfirm || isDraft;
+  const canCheckout = data.visit_status === 'CONFIRMED';
+  const canCancel = data.visit_status !== 'CONFIRMED' && data.visit_status !== 'CANCELLED';
 
   return (
     <div className="space-y-5">
@@ -57,25 +67,15 @@ export default function VisitDetailPage() {
           <h1 className="text-2xl font-semibold">Visit {data.visit_no}</h1>
           <span className={`pill ${pillForStatus(data.visit_status)}`}>{data.visit_status}</span>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            className="btn btn-ghost"
-            href={`${API_BASE}/sales-visits/${data.visit_id}/receipt.pdf`}
-            target="_blank"
-            rel="noreferrer"
-          >
+        <div className="flex flex-wrap items-center gap-2">
+          <a className="btn btn-ghost" href={`${API_BASE}/sales-visits/${data.visit_id}/receipt.pdf`} target="_blank" rel="noreferrer">
             Download PDF
           </a>
-          {canRecord && (
-            <button className="btn btn-ghost" onClick={() => setShowItems(true)}>
-              Record items
-            </button>
-          )}
-          {canConfirm && (
-            <button className="btn btn-primary" onClick={() => setShowConfirm(true)}>
-              Confirm visit
-            </button>
-          )}
+          {isDraft && (<button className="btn btn-ghost" onClick={() => setShowCheckin(true)}>Check in</button>)}
+          {canRecord && (<button className="btn btn-ghost" onClick={() => setShowItems(true)}>Record items</button>)}
+          {canConfirm && (<button className="btn btn-primary" onClick={() => setShowConfirm(true)}>Confirm visit</button>)}
+          {canCheckout && (<button className="btn btn-ghost" onClick={() => setShowCheckout(true)}>Check out</button>)}
+          {canCancel && (<button className="btn btn-ghost text-rose-600" onClick={() => setShowCancel(true)}>Cancel</button>)}
         </div>
       </div>
 
@@ -115,6 +115,9 @@ export default function VisitDetailPage() {
                   <td className="px-3 py-2 text-right font-mono">{fmtMoney(it.sales_amount)}</td>
                 </tr>
               ))}
+              {data.items.length === 0 && (
+                <tr><td colSpan={8} className="px-3 py-4 text-slate-500">No items recorded yet.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -144,14 +147,7 @@ export default function VisitDetailPage() {
                 <span className="font-mono text-xs text-slate-500">{inv.invoice_no}</span>
                 <span className="font-medium">{fmtMoney(inv.total_amount)} THB</span>
                 <span className="flex items-center gap-3">
-                  <a
-                    className="text-xs text-brand-600 hover:underline"
-                    href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    PDF
-                  </a>
+                  <a className="text-xs text-brand-600 hover:underline" href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`} target="_blank" rel="noreferrer">PDF</a>
                   <span className={`pill ${pillForStatus(inv.status)}`}>{inv.status}</span>
                 </span>
               </li>
@@ -160,20 +156,11 @@ export default function VisitDetailPage() {
         </section>
       )}
 
-      {showItems && (
-        <RecordItemsDialog
-          visit={data}
-          onClose={() => setShowItems(false)}
-          onDone={() => qc.invalidateQueries({ queryKey: ['visit', params.id] })}
-        />
-      )}
-      {showConfirm && (
-        <ConfirmDialog
-          visit={data}
-          onClose={() => setShowConfirm(false)}
-          onDone={() => qc.invalidateQueries({ queryKey: ['visit', params.id] })}
-        />
-      )}
+      {showItems && <RecordItemsDialog visit={data} onClose={() => setShowItems(false)} onDone={refresh} />}
+      {showConfirm && <ConfirmDialog visit={data} onClose={() => setShowConfirm(false)} onDone={refresh} />}
+      {showCheckin && <CheckinDialog visit={data} onClose={() => setShowCheckin(false)} onDone={refresh} />}
+      {showCheckout && <CheckoutDialog visit={data} onClose={() => setShowCheckout(false)} onDone={refresh} />}
+      {showCancel && <CancelDialog visit={data} onClose={() => setShowCancel(false)} onDone={refresh} />}
     </div>
   );
 }
@@ -187,25 +174,124 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-function ConfirmDialog({
-  visit,
-  onClose,
-  onDone,
-}: {
-  visit: VisitDetail;
-  onClose: () => void;
-  onDone: () => void;
-}) {
+function CheckinDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose: () => void; onDone: () => void }) {
+  const [lat, setLat] = useState('');
+  const [lon, setLon] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const m = useMutation({
+    mutationFn: () =>
+      api(`/sales-visits/${visit.visit_id}/checkin`, {
+        method: 'POST',
+        body: JSON.stringify({
+          gps_latitude: lat || undefined,
+          gps_longitude: lon || undefined,
+          photo_url: photoUrl || undefined,
+        }),
+      }),
+    onSuccess: () => { onDone(); onClose(); },
+    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
+  });
+
+  const useGeo = () => {
+    if (!navigator.geolocation) { setError('Geolocation not available'); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setLat(String(pos.coords.latitude)); setLon(String(pos.coords.longitude)); },
+      (err) => setError(err.message),
+    );
+  };
+
+  return (
+    <Modal title={`Check in — ${visit.visit_no}`} onClose={onClose}>
+      <div className="space-y-3 text-sm">
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className="label">Latitude</label><input className="input font-mono" value={lat} onChange={(e) => setLat(e.target.value)} /></div>
+          <div><label className="label">Longitude</label><input className="input font-mono" value={lon} onChange={(e) => setLon(e.target.value)} /></div>
+        </div>
+        <button type="button" className="btn btn-ghost" onClick={useGeo}>Use browser location</button>
+        <div><label className="label">Photo URL</label><input className="input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." /></div>
+        {error && <div className="text-sm text-rose-600">{error}</div>}
+        <div className="flex justify-end gap-2 pt-2">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Checking in…' : 'Check in'}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function CheckoutDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose: () => void; onDone: () => void }) {
+  const [note, setNote] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const m = useMutation({
+    mutationFn: () =>
+      api(`/sales-visits/${visit.visit_id}/checkout`, {
+        method: 'POST',
+        body: JSON.stringify({ note: note || undefined }),
+      }),
+    onSuccess: () => { onDone(); onClose(); },
+    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
+  });
+
+  return (
+    <Modal title={`Check out — ${visit.visit_no}`} onClose={onClose}>
+      <div className="space-y-3 text-sm">
+        <div><label className="label">Note</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
+        {error && <div className="text-sm text-rose-600">{error}</div>}
+        <div className="flex justify-end gap-2 pt-2">
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Check out'}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function CancelDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose: () => void; onDone: () => void }) {
+  const [reason, setReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const m = useMutation({
+    mutationFn: () =>
+      api(`/sales-visits/${visit.visit_id}/cancel`, {
+        method: 'POST',
+        body: JSON.stringify({ reason: reason || undefined }),
+      }),
+    onSuccess: () => { onDone(); onClose(); },
+    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
+  });
+
+  return (
+    <Modal title={`Cancel visit ${visit.visit_no}`} onClose={onClose}>
+      <div className="space-y-3 text-sm">
+        <p className="text-rose-700">This will mark the visit as CANCELLED. No stock or AR changes are written.</p>
+        <div><label className="label">Reason</label><input className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
+        {error && <div className="text-sm text-rose-600">{error}</div>}
+        <div className="flex justify-end gap-2 pt-2">
+          <button className="btn btn-ghost" onClick={onClose}>Keep</button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Cancel visit'}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+function ConfirmDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose: () => void; onDone: () => void }) {
   const isCod = visit.customer.credit_term_days === 0;
+  const warehouses = useWarehouses();
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'BANK_TRANSFER' | 'QR_PAYMENT' | 'OTHER'>('CASH');
   const [amount, setAmount] = useState(isCod ? visit.total_sales_amount : '0');
   const [reference, setReference] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
+  const [overrideCredit, setOverrideCredit] = useState(false);
+  const [overrideReason, setOverrideReason] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const hasReplenish = visit.items.some((it) => Number(it.qty_replenished) > 0);
 
   const m = useMutation({
     mutationFn: async () => {
       const body: Record<string, unknown> = {};
-      const hasReplenish = visit.items.some((it) => Number(it.qty_replenished) > 0);
       if (hasReplenish) {
         if (!warehouseId) throw new Error('warehouse_id is required when replenishing');
         body.warehouse_id = warehouseId;
@@ -215,6 +301,10 @@ function ConfirmDialog({
         body.amount_collected = amount;
         if (reference) body.reference_no = reference;
       }
+      if (overrideCredit) {
+        body.override_credit = true;
+        body.override_reason = overrideReason || undefined;
+      }
       const idemKey = `confirm-${visit.visit_id}-${Date.now()}`;
       return api(`/sales-visits/${visit.visit_id}/confirm`, {
         method: 'POST',
@@ -222,10 +312,8 @@ function ConfirmDialog({
         body: JSON.stringify(body),
       });
     },
-    onSuccess: () => {
-      onDone();
-      onClose();
-    },
+    onSuccess: () => { onDone(); onClose(); },
+    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
   });
 
   return (
@@ -235,75 +323,44 @@ function ConfirmDialog({
           Total sales: <span className="font-medium">{fmtMoney(visit.total_sales_amount)} THB</span>
           {isCod && <span className="ml-2 text-xs text-amber-600">COD — full payment required</span>}
         </p>
-        {visit.items.some((it) => Number(it.qty_replenished) > 0) && (
+        {hasReplenish && (
           <div>
-            <label className="label">Warehouse id (for replenishment)</label>
-            <input
-              className="input"
-              value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-              placeholder="e.g. 1"
-            />
+            <label className="label">Warehouse for replenishment</label>
+            <select className="input" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>
+              <option value="">— select —</option>
+              {warehouses.data?.map((w) => <option key={w.warehouse_id} value={w.warehouse_id}>{w.warehouse_code} — {w.warehouse_name}</option>)}
+            </select>
           </div>
         )}
         <div>
           <label className="label">Payment method</label>
-          <select
-            className="input"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value as never)}
-          >
+          <select className="input" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as never)}>
             <option>CASH</option>
             <option>BANK_TRANSFER</option>
             <option>QR_PAYMENT</option>
             <option>OTHER</option>
           </select>
         </div>
-        <div>
-          <label className="label">Amount collected</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="input"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="label">Reference</label>
-          <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
-        </div>
-        {m.error && (
-          <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {m.error instanceof ApiError ? m.error.message : 'Failed'}
-          </div>
+        <div><label className="label">Amount collected</label><input type="text" inputMode="decimal" className="input" value={amount} onChange={(e) => setAmount(e.target.value)} /></div>
+        <div><label className="label">Reference</label><input className="input" value={reference} onChange={(e) => setReference(e.target.value)} /></div>
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={overrideCredit} onChange={(e) => setOverrideCredit(e.target.checked)} />
+          Override credit limit (needs <code className="font-mono text-xs">credit.override</code>)
+        </label>
+        {overrideCredit && (
+          <input className="input" placeholder="Override reason" value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} />
         )}
+        {error && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
-          <button className="btn btn-ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className="btn btn-primary"
-            disabled={m.isPending}
-            onClick={() => m.mutate()}
-          >
-            {m.isPending ? 'Working…' : 'Confirm'}
-          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Confirm'}</button>
         </div>
       </div>
     </Modal>
   );
 }
 
-function RecordItemsDialog({
-  visit,
-  onClose,
-  onDone,
-}: {
-  visit: VisitDetail;
-  onClose: () => void;
-  onDone: () => void;
-}) {
+function RecordItemsDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose: () => void; onDone: () => void }) {
   const [items, setItems] = useState(() =>
     visit.items.map((it) => ({
       product_id: it.product_id,
@@ -313,8 +370,9 @@ function RecordItemsDialog({
       unit_price: it.unit_price,
     })),
   );
+  const [error, setError] = useState<string | null>(null);
   const m = useMutation({
-    mutationFn: async () =>
+    mutationFn: () =>
       api(`/sales-visits/${visit.visit_id}/items`, {
         method: 'POST',
         body: JSON.stringify({
@@ -326,108 +384,56 @@ function RecordItemsDialog({
           })),
         }),
       }),
-    onSuccess: () => {
-      onDone();
-      onClose();
-    },
+    onSuccess: () => { onDone(); onClose(); },
+    onError: (e) => setError(e instanceof ApiError ? e.message : 'Failed'),
   });
+
+  if (items.length === 0) {
+    return (
+      <Modal title={`Record items — ${visit.visit_no}`} onClose={onClose}>
+        <div className="space-y-3 text-sm">
+          <p className="text-slate-500">No products in consignment yet. Load stock to the customer first via Operations → Load to Customer.</p>
+          <div className="flex justify-end pt-2">
+            <button className="btn btn-ghost" onClick={onClose}>Close</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal title={`Record items — ${visit.visit_no}`} onClose={onClose}>
       <div className="space-y-3">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="table-head">
-              <th className="py-1 text-left">SKU</th>
-              <th className="py-1 text-right">Counted</th>
-              <th className="py-1 text-right">Replenish</th>
-              <th className="py-1 text-right">Price</th>
-            </tr>
-          </thead>
+          <thead><tr className="table-head">
+            <th className="py-1 text-left">SKU</th>
+            <th className="py-1 text-right">Counted</th>
+            <th className="py-1 text-right">Replenish</th>
+            <th className="py-1 text-right">Price</th>
+          </tr></thead>
           <tbody>
             {items.map((it, i) => (
               <tr key={it.product_id}>
                 <td className="py-1 font-mono text-xs">{it.sku}</td>
                 <td className="py-1 text-right">
-                  <input
-                    className="input w-24 text-right font-mono"
-                    value={it.qty_counted}
-                    onChange={(e) =>
-                      setItems((arr) =>
-                        arr.map((x, j) => (j === i ? { ...x, qty_counted: e.target.value } : x)),
-                      )
-                    }
-                  />
+                  <input className="input w-24 text-right font-mono" value={it.qty_counted} onChange={(e) => setItems((arr) => arr.map((x, j) => j === i ? { ...x, qty_counted: e.target.value } : x))} />
                 </td>
                 <td className="py-1 text-right">
-                  <input
-                    className="input w-24 text-right font-mono"
-                    value={it.qty_replenished}
-                    onChange={(e) =>
-                      setItems((arr) =>
-                        arr.map((x, j) => (j === i ? { ...x, qty_replenished: e.target.value } : x)),
-                      )
-                    }
-                  />
+                  <input className="input w-24 text-right font-mono" value={it.qty_replenished} onChange={(e) => setItems((arr) => arr.map((x, j) => j === i ? { ...x, qty_replenished: e.target.value } : x))} />
                 </td>
                 <td className="py-1 text-right">
-                  <input
-                    className="input w-24 text-right font-mono"
-                    value={it.unit_price}
-                    onChange={(e) =>
-                      setItems((arr) =>
-                        arr.map((x, j) => (j === i ? { ...x, unit_price: e.target.value } : x)),
-                      )
-                    }
-                  />
+                  <input className="input w-24 text-right font-mono" value={it.unit_price} onChange={(e) => setItems((arr) => arr.map((x, j) => j === i ? { ...x, unit_price: e.target.value } : x))} />
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {m.error && (
-          <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
-            {m.error instanceof ApiError ? m.error.message : 'Failed'}
-          </div>
-        )}
+        {error && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
-          <button className="btn btn-ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>
-            {m.isPending ? 'Saving…' : 'Save items'}
-          </button>
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Saving…' : 'Save items'}</button>
         </div>
       </div>
     </Modal>
-  );
-}
-
-function Modal({
-  title,
-  children,
-  onClose,
-}: {
-  title: string;
-  children: React.ReactNode;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-4"
-      onClick={onClose}
-    >
-      <div
-        className="card w-full max-w-lg space-y-4 p-5"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <button onClick={onClose} className="text-xl text-slate-400 hover:text-slate-700">
-            ×
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
   );
 }
