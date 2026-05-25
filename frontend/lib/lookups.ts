@@ -31,7 +31,7 @@ export function useWarehouses() {
 export function useProducts() {
   return useQuery({
     queryKey: ['lookup', 'products'],
-    queryFn: () => api<Page<ProductOpt>>('/products?pageSize=500&active=true').then((r) => r.data),
+    queryFn: () => api<Page<ProductOpt>>('/products?pageSize=200&active=true').then((r) => r.data),
     staleTime: 60_000,
   });
 }
