@@ -1,0 +1,31 @@
+# Render.com Blueprint — backend deploy
+# Sister to fly.toml; pick one provider per environment.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: consignment-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: RUN_MIGRATIONS
+        value: "true"
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=400
+      - key: LOG_LEVEL
+        value: info
+      - key: DEFAULT_TIMEZONE
+        value: Asia/Bangkok
+      - key: DATABASE_URL
+        sync: false  # set in Render dashboard — Neon pooler URL
+      - key: DIRECT_URL
+        sync: false  # set in Render dashboard — Neon direct URL (for migrations)
+      - key: JWT_SECRET
+        sync: false  # set in Render dashboard — at least 16 chars
