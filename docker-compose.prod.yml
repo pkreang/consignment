@@ -1,0 +1,53 @@
+# Production override. Use with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile frontend up -d
+#
+# Reads secrets from .env (real values, gitignored). See .env.production.example.
+
+services:
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:?POSTGRES_USER is required}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+      POSTGRES_DB: "${POSTGRES_DB:?POSTGRES_DB is required}"
+    ports: []  # postgres should not be exposed publicly in prod
+
+  api:
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required - run openssl rand -hex 48}"
+      RUN_MIGRATIONS: "true"
+      RUN_SEED: "${RUN_SEED:-false}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+    ports: []  # only Caddy exposes a public port
+
+  frontend:
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:3000
+      # Same-domain via Caddy → use a relative base. Override at build time if
+      # you split frontend/api onto different hostnames.
+      NEXT_PUBLIC_API_BASE_URL: ""
+    ports: []
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - frontend
+    environment:
+      APP_DOMAIN: "${APP_DOMAIN:-}"
+      ACME_EMAIL: "${ACME_EMAIL:-admin@example.com}"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
