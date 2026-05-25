@@ -1,4 +1,4 @@
-app = "consignment-api"
+app = "consignment-api-pkreang"
 primary_region = "sin"
 
 [build]
