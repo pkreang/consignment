@@ -2,10 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { api, isAuthed } from '@/lib/api';
+import { api } from '@/lib/api';
 import { fmtDate, fmtMoney, pillForStatus } from '@/lib/format';
 import { useErrorMessage } from '@/lib/use-error-message';
 
@@ -39,13 +37,9 @@ type LowStock = {
 type Page<T> = { data: T[]; total: number };
 
 export default function DashboardPage() {
-  const router = useRouter();
   const t = useTranslations('dashboard');
   const tc = useTranslations('common');
   const errorMessage = useErrorMessage();
-  useEffect(() => {
-    if (!isAuthed()) router.replace('/login');
-  }, [router]);
 
   const dashboard = useQuery({
     queryKey: ['dashboard'],
