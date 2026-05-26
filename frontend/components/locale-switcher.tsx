@@ -26,7 +26,7 @@ export function LocaleSwitcher() {
     <div
       role="group"
       aria-label="Language"
-      className="flex items-center gap-0.5 rounded-md border border-slate-200 p-0.5"
+      className="flex items-center gap-0.5 rounded-md border border-surface-200 p-0.5 dark:border-surface-700"
     >
       {LOCALES.map((l) => (
         <button
@@ -38,8 +38,8 @@ export function LocaleSwitcher() {
           className={
             'rounded px-2 py-0.5 text-xs font-medium transition ' +
             (l.code === locale
-              ? 'bg-brand-50 text-brand-700'
-              : 'text-slate-500 hover:bg-slate-100 disabled:opacity-50')
+              ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+              : 'text-surface-500 hover:bg-surface-100 disabled:opacity-50 dark:text-surface-400 dark:hover:bg-surface-800')
           }
         >
           {l.label}
