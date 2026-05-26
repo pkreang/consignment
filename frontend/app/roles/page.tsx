@@ -47,7 +47,7 @@ export default function RolesPage() {
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(r)}>Rename</button>
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setPermEditing(r)}>Permissions</button>
-                  <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm(`Delete ${r.role_name}?`)) del.mutate(r.role_id); }}>Delete</button>
+                  <button className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => { if (confirm(`Delete ${r.role_name}?`)) del.mutate(r.role_id); }}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -75,7 +75,7 @@ function RoleForm({ role, onClose, onSaved }: { role: Role | null; onClose: () =
     <Modal title={role ? `Rename ${role.role_name}` : 'New Role'} onClose={onClose}>
       <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (!name.trim()) { setError('Name required'); return; } m.mutate(); }}>
         <div><label className="label">Role name</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Save'}</button>

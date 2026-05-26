@@ -81,17 +81,17 @@ export default function ImportsPage() {
           </button>
         </div>
 
-        {errorMsg && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{errorMsg}</div>}
+        {errorMsg && <div className="alert-error">{errorMsg}</div>}
 
         {result && (
-          <div className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <div className="alert-success">
             ✓ {result.total} row(s) processed — {result.created} created, {result.updated} updated.
           </div>
         )}
 
         {errs && (
-          <div className="rounded-md border border-rose-200 bg-rose-50 p-3">
-            <div className="mb-1 text-sm font-medium text-rose-700">{errs.errors.length} row error(s) — nothing imported:</div>
+          <div className="alert-error border border-rose-200 dark:border-rose-500/30 p-3">
+            <div className="mb-1 text-sm font-medium text-rose-700 dark:text-rose-300">{errs.errors.length} row error(s) — nothing imported:</div>
             <ul className="space-y-1 text-xs text-rose-800">
               {errs.errors.map((e) => <li key={e.line}>Row {e.line}: {e.error}</li>)}
             </ul>

@@ -105,7 +105,7 @@ export default function ProductionReceiptPage() {
                 <td className="px-3 py-2"><input className="input w-28 font-mono" value={l.lot_no} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, lot_no: e.target.value } : x))} /></td>
                 <td className="px-3 py-2"><input type="date" className="input" value={l.manufacturing_date} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, manufacturing_date: e.target.value } : x))} /></td>
                 <td className="px-3 py-2"><input type="date" className="input" value={l.expiry_date} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, expiry_date: e.target.value } : x))} /></td>
-                <td className="px-3 py-2 text-right"><button type="button" className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button></td>
+                <td className="px-3 py-2 text-right"><button type="button" className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button></td>
               </tr>
             ))}
           </tbody>
@@ -116,7 +116,7 @@ export default function ProductionReceiptPage() {
       </div>
 
       <div className="flex items-center justify-end gap-3">
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Working…' : 'Receive into warehouse'}</button>
       </div>
     </form>

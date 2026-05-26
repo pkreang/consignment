@@ -36,7 +36,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold">{t('title')}</h1>
       {isLoading && <div className="card p-6">{tc('loading')}</div>}
       {error && (
-        <div className="card border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        <div className="card alert-error p-4">
           {t('loadError', { message: errorMessage(error) })}
         </div>
       )}

@@ -86,7 +86,7 @@ export default function ArAgingPage() {
               <tr key={inv.ar_invoice_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">
                   <a
-                    className="text-brand-600 hover:underline"
+                    className="text-brand-600 dark:text-brand-400 hover:underline"
                     href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`}
                     target="_blank"
                     rel="noreferrer"
@@ -190,7 +190,7 @@ function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
           <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
         </div>
         {m.error && (
-          <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <div className="alert-error">
             {errorMessage(m.error)}
           </div>
         )}

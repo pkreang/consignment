@@ -81,7 +81,7 @@ export default function ArPage() {
             {data?.data.map((inv) => (
               <tr key={inv.ar_invoice_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">
-                  <Link href={`/ar/${inv.ar_invoice_id}`} className="text-brand-600 hover:underline">{inv.invoice_no}</Link>
+                  <Link href={`/ar/${inv.ar_invoice_id}`} className="text-brand-600 dark:text-brand-400 hover:underline">{inv.invoice_no}</Link>
                 </td>
                 <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(inv.invoice_date)}</td>
                 <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(inv.due_date)}</td>
@@ -210,7 +210,7 @@ function CreateInvoice({ onClose, onDone }: { onClose: () => void; onDone: () =>
                   </td>
                   <td className="px-2 py-1 text-right"><input className="input w-20 text-right font-mono" value={l.qty} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, qty: e.target.value } : x))} /></td>
                   <td className="px-2 py-1 text-right"><input className="input w-24 text-right font-mono" value={l.unit_price} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, unit_price: e.target.value } : x))} /></td>
-                  <td><button type="button" className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button></td>
+                  <td><button type="button" className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button></td>
                 </tr>
               ))}
             </tbody>
@@ -223,7 +223,7 @@ function CreateInvoice({ onClose, onDone }: { onClose: () => void; onDone: () =>
         <div className="text-right text-sm text-surface-500">
           Total: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span>
         </div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Create invoice'}</button>
@@ -281,7 +281,7 @@ function PaymentDialog({ invoice, onClose, onDone }: { invoice: Invoice; onClose
           <label className="label">Reference</label>
           <input className="input" value={reference} onChange={(e) => setReference(e.target.value)} />
         </div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Working…' : 'Record payment'}</button>

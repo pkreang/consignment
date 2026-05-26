@@ -178,7 +178,7 @@ export default function CustomersPage() {
                 {tc('edit')}
               </button>
               <button
-                className="btn btn-ghost px-2 py-1 text-rose-600"
+                className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400"
                 disabled={del.isPending}
                 onClick={() => {
                   if (confirm(t('deleteConfirm', { name: c.customer_name }))) {
@@ -236,7 +236,7 @@ export default function CustomersPage() {
                     {tc('edit')}
                   </button>
                   <button
-                    className="btn btn-ghost px-2 py-1 text-rose-600"
+                    className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400"
                     disabled={del.isPending}
                     onClick={() => {
                       if (confirm(t('deleteConfirm', { name: c.customer_name }))) {
@@ -444,7 +444,7 @@ function CustomerForm({
           />
           {tc('active')}
         </label>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             {tc('cancel')}

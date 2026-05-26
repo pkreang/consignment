@@ -75,7 +75,7 @@ export default function VisitDetailPage() {
           {canRecord && (<button className="btn btn-ghost" onClick={() => setShowItems(true)}>Record items</button>)}
           {canConfirm && (<button className="btn btn-primary" onClick={() => setShowConfirm(true)}>Confirm visit</button>)}
           {canCheckout && (<button className="btn btn-ghost" onClick={() => setShowCheckout(true)}>Check out</button>)}
-          {canCancel && (<button className="btn btn-ghost text-rose-600" onClick={() => setShowCancel(true)}>Cancel</button>)}
+          {canCancel && (<button className="btn btn-ghost text-rose-600 dark:text-rose-400" onClick={() => setShowCancel(true)}>Cancel</button>)}
         </div>
       </div>
 
@@ -147,7 +147,7 @@ export default function VisitDetailPage() {
                 <span className="font-mono text-xs text-surface-500">{inv.invoice_no}</span>
                 <span className="font-medium">{fmtMoney(inv.total_amount)} THB</span>
                 <span className="flex items-center gap-3">
-                  <a className="text-xs text-brand-600 hover:underline" href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`} target="_blank" rel="noreferrer">PDF</a>
+                  <a className="text-xs text-brand-600 dark:text-brand-400 hover:underline" href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`} target="_blank" rel="noreferrer">PDF</a>
                   <span className={`pill ${pillForStatus(inv.status)}`}>{inv.status}</span>
                 </span>
               </li>
@@ -211,7 +211,7 @@ function CheckinDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose
         </div>
         <button type="button" className="btn btn-ghost" onClick={useGeo}>Use browser location</button>
         <div><label className="label">Photo URL</label><input className="input" value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..." /></div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Checking in…' : 'Check in'}</button>
@@ -239,7 +239,7 @@ function CheckoutDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClos
     <Modal title={`Check out — ${visit.visit_no}`} onClose={onClose}>
       <div className="space-y-3 text-sm">
         <div><label className="label">Note</label><input className="input" value={note} onChange={(e) => setNote(e.target.value)} /></div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Check out'}</button>
@@ -265,9 +265,9 @@ function CancelDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose:
   return (
     <Modal title={`Cancel visit ${visit.visit_no}`} onClose={onClose}>
       <div className="space-y-3 text-sm">
-        <p className="text-rose-700">This will mark the visit as CANCELLED. No stock or AR changes are written.</p>
+        <p className="text-rose-700 dark:text-rose-300">This will mark the visit as CANCELLED. No stock or AR changes are written.</p>
         <div><label className="label">Reason</label><input className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>Keep</button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Cancel visit'}</button>
@@ -321,7 +321,7 @@ function ConfirmDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose
       <div className="space-y-3 text-sm">
         <p className="text-surface-600">
           Total sales: <span className="font-medium">{fmtMoney(visit.total_sales_amount)} THB</span>
-          {isCod && <span className="ml-2 text-xs text-amber-600">COD — full payment required</span>}
+          {isCod && <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">COD — full payment required</span>}
         </p>
         {hasReplenish && (
           <div>
@@ -350,7 +350,7 @@ function ConfirmDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose
         {overrideCredit && (
           <input className="input" placeholder="Override reason" value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} />
         )}
-        {error && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
+        {error && <div className="alert-error">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Working…' : 'Confirm'}</button>
@@ -428,7 +428,7 @@ function RecordItemsDialog({ visit, onClose, onDone }: { visit: VisitDetail; onC
             ))}
           </tbody>
         </table>
-        {error && <div className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700">{error}</div>}
+        {error && <div className="alert-error">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" disabled={m.isPending} onClick={() => m.mutate()}>{m.isPending ? 'Saving…' : 'Save items'}</button>

@@ -105,7 +105,7 @@ export default function LoadPage() {
       <div className="flex items-center justify-between">
         <div className="text-sm text-surface-500">Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span></div>
         <div className="flex gap-2">
-          {error && <div className="text-sm text-rose-600">{error}</div>}
+          {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>
             {m.isPending ? 'Loading…' : 'Load to customer'}
           </button>
@@ -155,7 +155,7 @@ function Lines({
                 <input className="input w-28 text-right font-mono" inputMode="decimal" value={l.unit_price} onChange={(e) => update(i, { unit_price: e.target.value })} />
               </td>
               <td className="px-3 py-2 text-right">
-                <button type="button" className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => remove(i)}>✕</button>
+                <button type="button" className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => remove(i)}>✕</button>
               </td>
             </tr>
           ))}

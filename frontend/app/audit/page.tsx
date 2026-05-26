@@ -21,10 +21,10 @@ type Page<T> = { data: T[]; total: number };
 
 const colorFor = (a: AuditRow['action_type']) =>
   a === 'CREATE'
-    ? 'bg-emerald-100 text-emerald-700'
+    ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400'
     : a === 'UPDATE'
       ? 'bg-amber-100 text-amber-800'
-      : 'bg-rose-100 text-rose-700';
+      : 'bg-rose-100 text-rose-700 dark:text-rose-300';
 
 export default function AuditPage() {
   const t = useTranslations('audit');
@@ -101,12 +101,12 @@ export default function AuditPage() {
                 </td>
                 <td className="px-3 py-2">
                   <details>
-                    <summary className="cursor-pointer text-xs text-brand-600">{t('view')}</summary>
+                    <summary className="cursor-pointer text-xs text-brand-600 dark:text-brand-400">{t('view')}</summary>
                     <div className="mt-1 grid grid-cols-1 gap-2 md:grid-cols-2">
-                      <pre className="overflow-x-auto rounded bg-rose-50 p-2 text-[11px]">
+                      <pre className="overflow-x-auto rounded bg-rose-50 p-2 dark:bg-rose-500/10 text-[11px]">
                         {t('oldLabel')} {JSON.stringify(row.old_value, null, 2)}
                       </pre>
-                      <pre className="overflow-x-auto rounded bg-emerald-50 p-2 text-[11px]">
+                      <pre className="overflow-x-auto rounded bg-emerald-50 p-2 dark:bg-emerald-500/10 text-[11px]">
                         {t('newLabel')} {JSON.stringify(row.new_value, null, 2)}
                       </pre>
                     </div>

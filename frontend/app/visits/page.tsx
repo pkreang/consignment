@@ -103,7 +103,7 @@ export default function VisitsPage() {
             {data?.data.map((v) => (
               <tr key={v.visit_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">
-                  <Link href={`/visits/${v.visit_id}`} className="text-brand-600 hover:underline">{v.visit_no}</Link>
+                  <Link href={`/visits/${v.visit_id}`} className="text-brand-600 dark:text-brand-400 hover:underline">{v.visit_no}</Link>
                 </td>
                 <td className="px-3 py-2">
                   <div className="font-medium">{v.customer?.customer_name}</div>
@@ -204,7 +204,7 @@ function CreateVisitDialog({ onClose }: { onClose: () => void }) {
           <label className="label">Note</label>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Creating…' : 'Create & open'}</button>

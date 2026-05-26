@@ -40,7 +40,7 @@ export default function ProductCategoriesPage() {
                 <td className="px-3 py-2 font-medium">{c.category_name}</td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(c)}>Edit</button>
-                  <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm(`Delete ${c.category_name}?`)) del.mutate(c.category_id); }}>Delete</button>
+                  <button className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => { if (confirm(`Delete ${c.category_name}?`)) del.mutate(c.category_id); }}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -83,7 +83,7 @@ function CategoryForm({ cat, onClose, onSaved }: { cat: Category | null; onClose
           <div><label className="label">Code</label><input className="input" value={code} onChange={(e) => setCode(e.target.value)} /></div>
           <div><label className="label">Name</label><input className="input" value={name} onChange={(e) => setName(e.target.value)} /></div>
         </div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Save'}</button>

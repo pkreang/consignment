@@ -54,11 +54,11 @@ export default function UsersPage() {
                 <td className="px-3 py-2 font-medium">{u.full_name ?? '—'}</td>
                 <td className="px-3 py-2 text-sm">{u.role?.role_name ?? '—'}</td>
                 <td className="px-3 py-2 text-sm">{u.employee?.employee_name ?? '—'}</td>
-                <td className="px-3 py-2"><span className={'pill ' + (u.active_flag ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-200 text-surface-700')}>{u.active_flag ? 'Active' : 'Inactive'}</span></td>
+                <td className="px-3 py-2"><span className={'pill ' + (u.active_flag ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400' : 'bg-surface-200 text-surface-700')}>{u.active_flag ? 'Active' : 'Inactive'}</span></td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(u)}>Edit</button>
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setPwUser(u)}>Password</button>
-                  <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm(`Delete ${u.username}?`)) del.mutate(u.user_id); }}>Delete</button>
+                  <button className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => { if (confirm(`Delete ${u.username}?`)) del.mutate(u.user_id); }}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -150,7 +150,7 @@ function UserForm({ user, onClose, onSaved }: { user: User | null; onClose: () =
           </div>
         </div>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Active</label>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Save'}</button>
@@ -172,7 +172,7 @@ function PasswordDialog({ user, onClose, onDone }: { user: User; onClose: () => 
     <Modal title={`Change password — ${user.username}`} onClose={onClose}>
       <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (pw.length < 8) { setError('Password ≥8 chars'); return; } m.mutate(); }}>
         <div><label className="label">New password</label><input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} /></div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Set password'}</button>

@@ -42,7 +42,7 @@ export default function NotificationsPage() {
                 <span className="font-mono">{p.name}</span>
                 <span className="flex items-center gap-2 text-xs">
                   {p.dryRun && <span className="pill bg-amber-100 text-amber-800">dry-run</span>}
-                  <span className={'pill ' + (p.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-200 text-surface-700')}>{p.enabled ? 'enabled' : 'disabled'}</span>
+                  <span className={'pill ' + (p.enabled ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-400' : 'bg-surface-200 text-surface-700')}>{p.enabled ? 'enabled' : 'disabled'}</span>
                 </span>
               </li>
             ))}
@@ -63,7 +63,7 @@ export default function NotificationsPage() {
         </div>
         <div><label className="label">Body</label><textarea rows={3} className="input" value={body} onChange={(e) => setBody(e.target.value)} /></div>
         <div className="flex justify-end gap-3">
-          {testMsg && <div className={'text-sm ' + (testMsg.startsWith('✓') ? 'text-emerald-700' : 'text-rose-700')}>{testMsg}</div>}
+          {testMsg && <div className={'text-sm ' + (testMsg.startsWith('✓') ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-300')}>{testMsg}</div>}
           <button className="btn btn-primary" disabled={testM.isPending} onClick={() => testM.mutate()}>{testM.isPending ? 'Sending…' : 'Send test'}</button>
         </div>
       </section>
@@ -72,7 +72,7 @@ export default function NotificationsPage() {
         <h2 className="text-lg font-medium">AR Overdue Scan</h2>
         <p className="text-sm text-surface-500">Scan all open AR invoices that are past their due date and dispatch a grouped alert per customer. Read-only — does not mutate anything.</p>
         <div className="flex justify-end gap-3">
-          {scanMsg && <div className={'text-sm ' + (scanMsg.startsWith('✓') ? 'text-emerald-700' : 'text-rose-700')}>{scanMsg}</div>}
+          {scanMsg && <div className={'text-sm ' + (scanMsg.startsWith('✓') ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-300')}>{scanMsg}</div>}
           <button className="btn btn-primary" disabled={scanM.isPending} onClick={() => scanM.mutate()}>{scanM.isPending ? 'Scanning…' : 'Run overdue scan'}</button>
         </div>
       </section>

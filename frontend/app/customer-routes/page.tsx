@@ -63,7 +63,7 @@ export default function CustomerRoutesPage() {
                 <td className="px-3 py-2"><div>{a.route?.route_name}</div><div className="font-mono text-xs text-surface-500">{a.route?.route_code}</div></td>
                 <td className="px-3 py-2 text-xs">{a.visit_day ?? '—'}</td>
                 <td className="px-3 py-2 text-right">
-                  <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm('Remove assignment?')) del.mutate(a.customer_route_id); }}>Remove</button>
+                  <button className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => { if (confirm('Remove assignment?')) del.mutate(a.customer_route_id); }}>Remove</button>
                 </td>
               </tr>
             ))}
@@ -124,7 +124,7 @@ function AssignDialog({ onClose, onDone }: { onClose: () => void; onDone: () => 
             <option>MON</option><option>TUE</option><option>WED</option><option>THU</option><option>FRI</option><option>SAT</option><option>SUN</option>
           </select>
         </div>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Saving…' : 'Assign'}</button>

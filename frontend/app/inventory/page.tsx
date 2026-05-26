@@ -211,8 +211,8 @@ function MovementsTab({ mType, setMType, page, setPage }: { mType: string; setMT
                 <td className="px-3 py-2"><span className="pill-neutral">{m.movement_type}</span></td>
                 <td className="px-3 py-2 font-mono text-xs text-surface-500">{m.ref_doc_type}:{m.ref_doc_id}</td>
                 <td className="px-3 py-2"><div>{m.product?.product_name}</div><div className="font-mono text-xs text-surface-500">{m.product?.sku_code}</div></td>
-                <td className="px-3 py-2 text-right font-mono text-emerald-700">{Number(m.qty_in) > 0 ? fmtMoney(m.qty_in) : ''}</td>
-                <td className="px-3 py-2 text-right font-mono text-rose-700">{Number(m.qty_out) > 0 ? fmtMoney(m.qty_out) : ''}</td>
+                <td className="px-3 py-2 text-right font-mono text-emerald-700 dark:text-emerald-400">{Number(m.qty_in) > 0 ? fmtMoney(m.qty_in) : ''}</td>
+                <td className="px-3 py-2 text-right font-mono text-rose-700 dark:text-rose-300">{Number(m.qty_out) > 0 ? fmtMoney(m.qty_out) : ''}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(m.balance_after)}</td>
               </tr>
             ))}

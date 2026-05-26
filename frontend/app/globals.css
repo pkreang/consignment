@@ -72,4 +72,13 @@
   .link {
     @apply text-brand-600 transition hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300;
   }
+  .alert-error {
+    @apply rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/15 dark:text-rose-300;
+  }
+  .alert-success {
+    @apply rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300;
+  }
+  .alert-warning {
+    @apply rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/15 dark:text-amber-300;
+  }
 }

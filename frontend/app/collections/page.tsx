@@ -166,7 +166,7 @@ function CreateForm({ onClose, onDone }: { onClose: () => void; onDone: () => vo
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         <p className="text-xs text-surface-500">Payment is allocated to oldest open AR invoices first (FIFO).</p>
-        {error && <div className="text-sm text-rose-600">{error}</div>}
+        {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>{m.isPending ? 'Recording…' : 'Record collection'}</button>

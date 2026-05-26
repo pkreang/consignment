@@ -106,7 +106,7 @@ export default function ReturnPage() {
                   <input className="input w-28 text-right font-mono" inputMode="decimal" value={l.unit_price} onChange={(e) => setLines(lines.map((x, j) => j === i ? { ...x, unit_price: e.target.value } : x))} />
                 </td>
                 <td className="px-3 py-2 text-right">
-                  <button type="button" className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button>
+                  <button type="button" className="btn btn-ghost px-2 py-1 text-rose-600 dark:text-rose-400" onClick={() => setLines(lines.filter((_, j) => j !== i))}>✕</button>
                 </td>
               </tr>
             ))}
@@ -122,7 +122,7 @@ export default function ReturnPage() {
           Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(lines.reduce((s, l) => s + Number(l.qty || 0) * Number(l.unit_price || 0), 0))}</span>
         </div>
         <div className="flex items-center gap-3">
-          {error && <div className="text-sm text-rose-600">{error}</div>}
+          {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>
             {m.isPending ? 'Working…' : 'Return stock'}
           </button>
