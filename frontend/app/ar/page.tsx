@@ -221,7 +221,7 @@ function CreateInvoice({ onClose, onDone }: { onClose: () => void; onDone: () =>
         </div>
 
         <div className="text-right text-sm text-surface-500">
-          Total: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span>
+          Total: <span className="font-mono font-medium text-surface-900 dark:text-surface-100">{fmtMoney(total)}</span>
         </div>
         {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">

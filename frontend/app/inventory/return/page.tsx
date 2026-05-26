@@ -119,7 +119,7 @@ export default function ReturnPage() {
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-surface-500">
-          Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(lines.reduce((s, l) => s + Number(l.qty || 0) * Number(l.unit_price || 0), 0))}</span>
+          Estimated value: <span className="font-mono font-medium text-surface-900 dark:text-surface-100">{fmtMoney(lines.reduce((s, l) => s + Number(l.qty || 0) * Number(l.unit_price || 0), 0))}</span>
         </div>
         <div className="flex items-center gap-3">
           {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}

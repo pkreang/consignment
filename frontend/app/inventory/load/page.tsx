@@ -103,7 +103,7 @@ export default function LoadPage() {
       <Lines lines={lines} setLines={setLines} products={products.data ?? []} />
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-surface-500">Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span></div>
+        <div className="text-sm text-surface-500">Estimated value: <span className="font-mono font-medium text-surface-900 dark:text-surface-100">{fmtMoney(total)}</span></div>
         <div className="flex gap-2">
           {error && <div className="text-sm text-rose-600 dark:text-rose-400">{error}</div>}
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>
