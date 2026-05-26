@@ -51,26 +51,26 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Inventory</h1>
-        <div className="flex items-center gap-2">
-          <Link className="btn btn-ghost" href="/inventory/load">Load</Link>
-          <Link className="btn btn-ghost" href="/inventory/return">Return</Link>
-          <Link className="btn btn-ghost" href="/inventory/adjustment">Adjust</Link>
-          <Link className="btn btn-primary" href="/inventory/production-receipt">Production</Link>
+        <div className="-mx-1 flex items-center gap-1 overflow-x-auto sm:mx-0 sm:gap-2">
+          <Link className="btn btn-ghost whitespace-nowrap" href="/inventory/load">Load</Link>
+          <Link className="btn btn-ghost whitespace-nowrap" href="/inventory/return">Return</Link>
+          <Link className="btn btn-ghost whitespace-nowrap" href="/inventory/adjustment">Adjust</Link>
+          <Link className="btn btn-primary whitespace-nowrap" href="/inventory/production-receipt">Production</Link>
         </div>
       </div>
 
-      <div className="flex gap-1 border-b border-slate-200 text-sm">
+      <div className="flex gap-1 overflow-x-auto border-b border-surface-200 text-sm dark:border-surface-800">
         {(['warehouse', 'consignment', 'movements'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => { setTab(t); setPage(1); }}
             className={
-              'border-b-2 px-3 py-2 ' +
+              'whitespace-nowrap border-b-2 px-3 py-2 transition ' +
               (tab === t
-                ? 'border-brand-600 font-medium text-brand-700'
-                : 'border-transparent text-slate-500 hover:text-slate-700')
+                ? 'border-brand-600 font-medium text-brand-700 dark:text-brand-400'
+                : 'border-transparent text-surface-500 hover:text-surface-700 dark:hover:text-surface-300')
             }
           >
             {t === 'warehouse' ? 'Warehouse stock' : t === 'consignment' ? 'Consignment stock' : 'Movements'}
@@ -99,8 +99,8 @@ function WarehouseTab({ low, setLow, page, setPage }: { low: boolean; setLow: (b
         <input type="checkbox" checked={low} onChange={(e) => { setLow(e.target.checked); setPage(1); }} />
         Low stock only
       </label>
-      <div className="card overflow-hidden">
-        <table className="w-full">
+      <div className="card overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Warehouse</th>
             <th className="px-3 py-2">SKU</th>
@@ -111,7 +111,7 @@ function WarehouseTab({ low, setLow, page, setPage }: { low: boolean; setLow: (b
             <th className="px-3 py-2 text-right">Min / Max</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((s) => (
               <tr key={s.id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{s.warehouse?.warehouse_code}</td>
@@ -120,13 +120,13 @@ function WarehouseTab({ low, setLow, page, setPage }: { low: boolean; setLow: (b
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(s.qty_on_hand)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(s.qty_reserved)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(s.qty_available)}</td>
-                <td className="px-3 py-2 text-right font-mono text-xs text-slate-500">
+                <td className="px-3 py-2 text-right font-mono text-xs text-surface-500">
                   {fmtMoney(s.product?.min_stock)} / {fmtMoney(s.product?.max_stock)}
                 </td>
               </tr>
             ))}
             {data && data.data.length === 0 && (
-              <tr><td colSpan={7} className="px-3 py-4 text-slate-500">No rows.</td></tr>
+              <tr><td colSpan={7} className="px-3 py-4 text-surface-500">No rows.</td></tr>
             )}
           </tbody>
         </table>
@@ -143,8 +143,8 @@ function ConsignmentTab({ page, setPage }: { page: number; setPage: (n: number) 
   });
   return (
     <>
-      <div className="card overflow-hidden">
-        <table className="w-full">
+      <div className="card overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Customer</th>
             <th className="px-3 py-2">SKU</th>
@@ -153,18 +153,18 @@ function ConsignmentTab({ page, setPage }: { page: number; setPage: (n: number) 
             <th className="px-3 py-2">Last visit</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={5} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={5} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((s) => (
               <tr key={s.id} className="table-row">
-                <td className="px-3 py-2"><div className="font-medium">{s.customer?.customer_name}</div><div className="font-mono text-xs text-slate-500">{s.customer?.customer_code}</div></td>
+                <td className="px-3 py-2"><div className="font-medium">{s.customer?.customer_name}</div><div className="font-mono text-xs text-surface-500">{s.customer?.customer_code}</div></td>
                 <td className="px-3 py-2 font-mono text-xs">{s.product?.sku_code}</td>
                 <td className="px-3 py-2">{s.product?.product_name}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(s.qty_on_hand)}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(s.last_visit_date)}</td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(s.last_visit_date)}</td>
               </tr>
             ))}
             {data && data.data.length === 0 && (
-              <tr><td colSpan={5} className="px-3 py-4 text-slate-500">No rows.</td></tr>
+              <tr><td colSpan={5} className="px-3 py-4 text-surface-500">No rows.</td></tr>
             )}
           </tbody>
         </table>
@@ -192,8 +192,8 @@ function MovementsTab({ mType, setMType, page, setPage }: { mType: string; setMT
         <option>RETURN_FROM_CUSTOMER</option>
         <option>CUSTOMER_ADJUSTMENT</option>
       </select>
-      <div className="card overflow-hidden">
-        <table className="w-full">
+      <div className="card overflow-x-auto">
+        <table className="w-full min-w-[640px]">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Date</th>
             <th className="px-3 py-2">Type</th>
@@ -204,20 +204,20 @@ function MovementsTab({ mType, setMType, page, setPage }: { mType: string; setMT
             <th className="px-3 py-2 text-right">Balance</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((m) => (
               <tr key={m.movement_id} className="table-row">
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(m.movement_date)}</td>
-                <td className="px-3 py-2"><span className="pill bg-slate-100 text-slate-700">{m.movement_type}</span></td>
-                <td className="px-3 py-2 font-mono text-xs text-slate-500">{m.ref_doc_type}:{m.ref_doc_id}</td>
-                <td className="px-3 py-2"><div>{m.product?.product_name}</div><div className="font-mono text-xs text-slate-500">{m.product?.sku_code}</div></td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(m.movement_date)}</td>
+                <td className="px-3 py-2"><span className="pill-neutral">{m.movement_type}</span></td>
+                <td className="px-3 py-2 font-mono text-xs text-surface-500">{m.ref_doc_type}:{m.ref_doc_id}</td>
+                <td className="px-3 py-2"><div>{m.product?.product_name}</div><div className="font-mono text-xs text-surface-500">{m.product?.sku_code}</div></td>
                 <td className="px-3 py-2 text-right font-mono text-emerald-700">{Number(m.qty_in) > 0 ? fmtMoney(m.qty_in) : ''}</td>
                 <td className="px-3 py-2 text-right font-mono text-rose-700">{Number(m.qty_out) > 0 ? fmtMoney(m.qty_out) : ''}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(m.balance_after)}</td>
               </tr>
             ))}
             {data && data.data.length === 0 && (
-              <tr><td colSpan={7} className="px-3 py-4 text-slate-500">No movements.</td></tr>
+              <tr><td colSpan={7} className="px-3 py-4 text-surface-500">No movements.</td></tr>
             )}
           </tbody>
         </table>
@@ -229,7 +229,7 @@ function MovementsTab({ mType, setMType, page, setPage }: { mType: string; setMT
 
 function Pager({ page, setPage, total, rows }: { page: number; setPage: (n: number) => void; total?: number; rows?: number; }) {
   return (
-    <div className="flex items-center justify-between text-sm text-slate-500">
+    <div className="flex items-center justify-between text-sm text-surface-500">
       <div>Total: {total?.toLocaleString() ?? '—'} • Page {page}</div>
       <div className="flex gap-1">
         <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>

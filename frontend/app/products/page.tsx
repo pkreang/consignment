@@ -116,11 +116,11 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex items-center gap-2">
           <input
-            className="input max-w-xs"
+            className="input sm:max-w-xs"
             placeholder={t('searchPlaceholder')}
             value={q}
             onChange={(e) => {
@@ -137,7 +137,59 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="space-y-2 md:hidden">
+        {isLoading && (
+          <div className="card p-4 text-sm text-surface-500">{tc('loading')}</div>
+        )}
+        {data?.data.map((p) => (
+          <div key={p.product_id} className="card space-y-2 p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-medium">{p.product_name}</div>
+                <div className="font-mono text-xs text-surface-500">
+                  {p.sku_code} · {p.unit}
+                </div>
+              </div>
+              <span className={p.active_flag ? 'pill-success' : 'pill-neutral'}>
+                {p.active_flag ? tc('active') : tc('inactive')}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-surface-600 dark:text-surface-400">
+              <div>
+                <div className="text-surface-500">{t('colCost')}</div>
+                <div className="font-mono">{fmtMoney(p.cost)}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-surface-500">{t('colPrice')}</div>
+                <div className="font-mono">{fmtMoney(p.selling_price)}</div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-1 border-t border-surface-100 pt-2 dark:border-surface-800">
+              <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(p)}>
+                {tc('edit')}
+              </button>
+              <button
+                className="btn btn-ghost px-2 py-1 text-rose-600"
+                disabled={del.isPending}
+                onClick={() => {
+                  if (confirm(t('deleteConfirm', { name: p.product_name }))) {
+                    del.mutate(p.product_id);
+                  }
+                }}
+              >
+                {tc('delete')}
+              </button>
+            </div>
+          </div>
+        ))}
+        {data && data.data.length === 0 && !isLoading && (
+          <div className="card p-4 text-sm text-surface-500">{t('empty')}</div>
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="card hidden overflow-hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -154,14 +206,14 @@ export default function ProductsPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
+                <td colSpan={8} className="px-3 py-4 text-surface-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((p) => (
               <tr key={p.product_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{p.sku_code}</td>
                 <td className="px-3 py-2 font-medium">{p.product_name}</td>
-                <td className="px-3 py-2 text-xs uppercase text-slate-500">{p.unit}</td>
+                <td className="px-3 py-2 text-xs uppercase text-surface-500">{p.unit}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(p.cost)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(p.selling_price)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(p.min_stock)}</td>
@@ -189,7 +241,7 @@ export default function ProductsPage() {
             ))}
             {data && data.data.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={8} className="px-3 py-4 text-slate-500">
+                <td colSpan={8} className="px-3 py-4 text-surface-500">
                   {t('empty')}
                 </td>
               </tr>
@@ -199,7 +251,7 @@ export default function ProductsPage() {
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
@@ -271,7 +323,7 @@ function ProductForm({
   return (
     <Modal title={product ? t('editProduct') : t('newProduct')} onClose={onClose}>
       <form className="space-y-3" onSubmit={submit}>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">{t('fieldSkuCode')}</label>
             <input
@@ -297,7 +349,7 @@ function ProductForm({
             onChange={(e) => set('product_name', e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className="label">{t('fieldUnit')}</label>
             <input
@@ -325,7 +377,7 @@ function ProductForm({
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className="label">{t('fieldMinStock')}</label>
             <input

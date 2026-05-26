@@ -34,13 +34,13 @@ export default function VisitsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Sales Visits</h1>
         <div className="flex items-center gap-2">
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1); }}
-            className="input max-w-[180px]"
+            className="input sm:max-w-[180px]"
           >
             <option value="">All statuses</option>
             <option>DRAFT</option>
@@ -49,11 +49,42 @@ export default function VisitsPage() {
             <option>CONFIRMED</option>
             <option>CANCELLED</option>
           </select>
-          <button className="btn btn-primary" onClick={() => setCreating(true)}>New visit</button>
+          <button className="btn btn-primary whitespace-nowrap" onClick={() => setCreating(true)}>New visit</button>
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="space-y-2 md:hidden">
+        {isLoading && <div className="card p-4 text-sm text-surface-500">Loading…</div>}
+        {data?.data.map((v) => (
+          <Link key={v.visit_id} href={`/visits/${v.visit_id}`} className="card block space-y-2 p-4 transition hover:border-brand-300 dark:hover:border-brand-500/50">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-mono text-xs text-brand-600 dark:text-brand-400">{v.visit_no}</div>
+                <div className="font-medium">{v.customer?.customer_name}</div>
+                <div className="text-xs text-surface-500">{v.customer?.customer_code}</div>
+              </div>
+              <span className={`pill ${pillForStatus(v.visit_status)}`}>{v.visit_status}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-surface-600 dark:text-surface-400">
+              <div>
+                <div className="text-surface-500">{fmtDate(v.visit_date)}</div>
+                <div>{v.employee?.employee_name}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-surface-500">Sales</div>
+                <div className="font-mono">{fmtMoney(v.total_sales_amount)}</div>
+              </div>
+            </div>
+          </Link>
+        ))}
+        {data && data.data.length === 0 && (
+          <div className="card p-4 text-center text-sm text-surface-500">No visits found</div>
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="card hidden overflow-hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -67,7 +98,7 @@ export default function VisitsPage() {
           </thead>
           <tbody>
             {isLoading && (
-              <tr><td colSpan={6} className="px-3 py-4 text-sm text-slate-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-3 py-4 text-sm text-surface-500">Loading…</td></tr>
             )}
             {data?.data.map((v) => (
               <tr key={v.visit_id} className="table-row">
@@ -76,7 +107,7 @@ export default function VisitsPage() {
                 </td>
                 <td className="px-3 py-2">
                   <div className="font-medium">{v.customer?.customer_name}</div>
-                  <div className="text-xs text-slate-500">{v.customer?.customer_code}</div>
+                  <div className="text-xs text-surface-500">{v.customer?.customer_code}</div>
                 </td>
                 <td className="px-3 py-2">{v.employee?.employee_name}</td>
                 <td className="px-3 py-2">{fmtDate(v.visit_date)}</td>
@@ -85,14 +116,14 @@ export default function VisitsPage() {
               </tr>
             ))}
             {data && data.data.length === 0 && (
-              <tr><td colSpan={6} className="px-3 py-6 text-center text-sm text-slate-500">No visits found</td></tr>
+              <tr><td colSpan={6} className="px-3 py-6 text-center text-sm text-surface-500">No visits found</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total.toLocaleString()} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
@@ -153,7 +184,7 @@ function CreateVisitDialog({ onClose }: { onClose: () => void }) {
             {customers.data?.map((c) => <option key={c.customer_id} value={c.customer_id}>{c.customer_code} — {c.customer_name}</option>)}
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">Sales rep</label>
             <select className="input" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>

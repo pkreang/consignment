@@ -126,11 +126,11 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <div className="flex items-center gap-2">
           <input
-            className="input max-w-xs"
+            className="input sm:max-w-xs"
             placeholder={t('searchPlaceholder')}
             value={q}
             onChange={(e) => {
@@ -147,7 +147,57 @@ export default function CustomersPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      {/* Mobile: card list */}
+      <div className="space-y-2 md:hidden">
+        {isLoading && (
+          <div className="card p-4 text-sm text-surface-500">{tc('loading')}</div>
+        )}
+        {data?.data.map((c) => (
+          <div key={c.customer_id} className="card space-y-2 p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-medium">{c.customer_name}</div>
+                <div className="font-mono text-xs text-surface-500">{c.customer_code}</div>
+              </div>
+              <span className={c.active_flag ? 'pill-success' : 'pill-neutral'}>
+                {c.active_flag ? tc('active') : tc('inactive')}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs text-surface-600 dark:text-surface-400">
+              <div>
+                <div className="text-surface-500">{t('colCreditTerm')}</div>
+                <div>{t('creditTermDays', { days: c.credit_term_days })}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-surface-500">{t('colCreditLimit')}</div>
+                <div className="font-mono">{fmtMoney(c.credit_limit)}</div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-1 border-t border-surface-100 pt-2 dark:border-surface-800">
+              <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(c)}>
+                {tc('edit')}
+              </button>
+              <button
+                className="btn btn-ghost px-2 py-1 text-rose-600"
+                disabled={del.isPending}
+                onClick={() => {
+                  if (confirm(t('deleteConfirm', { name: c.customer_name }))) {
+                    del.mutate(c.customer_id);
+                  }
+                }}
+              >
+                {tc('delete')}
+              </button>
+            </div>
+          </div>
+        ))}
+        {data && data.data.length === 0 && !isLoading && (
+          <div className="card p-4 text-sm text-surface-500">{t('empty')}</div>
+        )}
+      </div>
+
+      {/* Desktop: table */}
+      <div className="card hidden overflow-hidden md:block">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -162,7 +212,7 @@ export default function CustomersPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
+                <td colSpan={6} className="px-3 py-4 text-surface-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((c) => (
@@ -174,12 +224,7 @@ export default function CustomersPage() {
                 </td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(c.credit_limit)}</td>
                 <td className="px-3 py-2">
-                  <span
-                    className={
-                      'pill ' +
-                      (c.active_flag ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700')
-                    }
-                  >
+                  <span className={c.active_flag ? 'pill-success' : 'pill-neutral'}>
                     {c.active_flag ? tc('active') : tc('inactive')}
                   </span>
                 </td>
@@ -206,7 +251,7 @@ export default function CustomersPage() {
             ))}
             {data && data.data.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-slate-500">
+                <td colSpan={6} className="px-3 py-4 text-surface-500">
                   {t('empty')}
                 </td>
               </tr>
@@ -216,7 +261,7 @@ export default function CustomersPage() {
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
@@ -291,7 +336,7 @@ function CustomerForm({
       onClose={onClose}
     >
       <form className="space-y-3" onSubmit={submit}>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">{t('fieldCustomerCode')}</label>
             <input
@@ -309,7 +354,7 @@ function CustomerForm({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">{t('fieldOwnerName')}</label>
             <input
@@ -327,7 +372,7 @@ function CustomerForm({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="label">{t('fieldLineId')}</label>
             <input
@@ -353,7 +398,7 @@ function CustomerForm({
             onChange={(e) => set('address', e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
             <label className="label">{t('fieldVisitFreq')}</label>
             <input
