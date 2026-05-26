@@ -67,10 +67,20 @@
     "signOut": "ออกจากระบบ"
   },
   "login": {
+    "brand": "Consignment ERP",
     "title": "เข้าสู่ระบบ",
+    "subtitle": "ยินดีต้อนรับกลับ กรุณาเข้าสู่ระบบเพื่อใช้งาน",
+    "tagline": "บริหารสต็อกฝากขาย ครบจบในที่เดียว",
+    "taglineSub": "จัดการการเข้าพบลูกค้า สต็อก ลูกหนี้ และรายงานยอดขาย แบบ real-time",
+    "featureVisits": "การเข้าพบ",
+    "featureInventory": "สต็อก",
+    "featureCustomers": "ลูกค้า",
+    "featureReports": "รายงาน",
     "defaultAdmin": "ผู้ดูแลระบบเริ่มต้น:",
     "username": "ชื่อผู้ใช้",
     "password": "รหัสผ่าน",
+    "showPassword": "แสดง",
+    "hidePassword": "ซ่อน",
     "submit": "เข้าสู่ระบบ",
     "submitting": "กำลังเข้าสู่ระบบ…"
   },

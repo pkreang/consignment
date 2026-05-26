@@ -67,10 +67,20 @@
     "signOut": "Sign out"
   },
   "login": {
+    "brand": "Consignment ERP",
     "title": "Sign in",
+    "subtitle": "Welcome back. Please sign in to continue.",
+    "tagline": "Consignment & van sales, in one place",
+    "taglineSub": "Manage customer visits, inventory, AR, and sales reports — all in real time.",
+    "featureVisits": "Visits",
+    "featureInventory": "Inventory",
+    "featureCustomers": "Customers",
+    "featureReports": "Reports",
     "defaultAdmin": "Default admin:",
     "username": "Username",
     "password": "Password",
+    "showPassword": "Show",
+    "hidePassword": "Hide",
     "submit": "Sign in",
     "submitting": "Signing in…"
   },
