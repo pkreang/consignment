@@ -59,9 +59,11 @@ export function createApp(): Express {
   app.use(globalRateLimit);
 
   app.get('/health', (_req: Request, res: Response) => {
+    res.set('Cache-Control', 'no-store');
     res.json({ status: 'ok', service: 'consignment-erp-lite' });
   });
   app.get('/ready', async (_req: Request, res: Response) => {
+    res.set('Cache-Control', 'no-store');
     try {
       const { prisma } = await import('./database/prisma');
       await prisma.$queryRaw`SELECT 1`;
