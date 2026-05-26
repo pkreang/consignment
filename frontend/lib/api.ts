@@ -37,6 +37,23 @@ export function isAuthed(): boolean {
   return !!getToken();
 }
 
+/** Fire a no-auth GET /health against the API root to wake a sleeping
+ *  Render free-tier dyno while the user is still typing credentials.
+ *  Silent best-effort — never throws, never blocks. */
+export function prewarmBackend(): void {
+  if (typeof window === 'undefined') return;
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!base) return;
+  try {
+    fetch(`${base}/health`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(60_000),
+    }).catch(() => {});
+  } catch {
+    // AbortSignal.timeout unsupported on very old browsers — ignore.
+  }
+}
+
 export async function api<T = unknown>(
   path: string,
   init: RequestInit = {},

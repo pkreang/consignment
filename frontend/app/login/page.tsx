@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { login } from '@/lib/api';
+import { login, prewarmBackend } from '@/lib/api';
 import { useErrorMessage } from '@/lib/use-error-message';
 import { BoxIcon, ChartIcon, TruckIcon, UsersIcon } from '@/components/icons';
 
@@ -16,6 +16,12 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Wake the Render free-tier backend while the user types — cold start
+  // can take 30-60s and would otherwise hit on submit.
+  useEffect(() => {
+    prewarmBackend();
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
