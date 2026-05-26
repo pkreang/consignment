@@ -33,29 +33,29 @@ export default function EmployeesPage() {
           <button className="btn btn-primary" onClick={() => setCreating(true)}>New Employee</button>
         </div>
       </div>
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head"><th className="px-3 py-2">Code</th><th className="px-3 py-2">Name</th><th className="px-3 py-2">Mobile</th><th className="px-3 py-2">Active</th><th className="px-3 py-2 text-right">Actions</th></tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={5} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={5} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((e) => (
               <tr key={e.employee_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{e.employee_code}</td>
                 <td className="px-3 py-2 font-medium">{e.employee_name}</td>
                 <td className="px-3 py-2 text-xs">{e.mobile_no ?? '—'}</td>
-                <td className="px-3 py-2"><span className={'pill ' + (e.active_flag ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700')}>{e.active_flag ? 'Active' : 'Inactive'}</span></td>
+                <td className="px-3 py-2"><span className={'pill ' + (e.active_flag ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-200 text-surface-700')}>{e.active_flag ? 'Active' : 'Inactive'}</span></td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(e)}>Edit</button>
                   <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm(`Delete ${e.employee_name}?`)) del.mutate(e.employee_id); }}>Delete</button>
                 </td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={5} className="px-3 py-4 text-slate-500">No employees.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={5} className="px-3 py-4 text-surface-500">No employees.</td></tr>}
           </tbody>
         </table>
       </div>
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>

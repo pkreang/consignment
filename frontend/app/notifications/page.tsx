@@ -31,9 +31,9 @@ export default function NotificationsPage() {
 
       <section className="card p-4">
         <h2 className="mb-3 text-lg font-medium">Configured providers</h2>
-        {!providers.data && <div className="text-sm text-slate-500">Loading…</div>}
+        {!providers.data && <div className="text-sm text-surface-500">Loading…</div>}
         {providers.data && providers.data.providers.length === 0 && (
-          <div className="text-sm text-slate-500">No providers configured. Set <code className="font-mono text-xs">NOTIFY_WEBHOOK_URL</code> or <code className="font-mono text-xs">LINE_NOTIFY_TOKEN</code> in backend env.</div>
+          <div className="text-sm text-surface-500">No providers configured. Set <code className="font-mono text-xs">NOTIFY_WEBHOOK_URL</code> or <code className="font-mono text-xs">LINE_NOTIFY_TOKEN</code> in backend env.</div>
         )}
         {providers.data && (
           <ul className="divide-y text-sm">
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
                 <span className="font-mono">{p.name}</span>
                 <span className="flex items-center gap-2 text-xs">
                   {p.dryRun && <span className="pill bg-amber-100 text-amber-800">dry-run</span>}
-                  <span className={'pill ' + (p.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-700')}>{p.enabled ? 'enabled' : 'disabled'}</span>
+                  <span className={'pill ' + (p.enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-surface-200 text-surface-700')}>{p.enabled ? 'enabled' : 'disabled'}</span>
                 </span>
               </li>
             ))}
@@ -70,7 +70,7 @@ export default function NotificationsPage() {
 
       <section className="card space-y-3 p-4">
         <h2 className="text-lg font-medium">AR Overdue Scan</h2>
-        <p className="text-sm text-slate-500">Scan all open AR invoices that are past their due date and dispatch a grouped alert per customer. Read-only — does not mutate anything.</p>
+        <p className="text-sm text-surface-500">Scan all open AR invoices that are past their due date and dispatch a grouped alert per customer. Read-only — does not mutate anything.</p>
         <div className="flex justify-end gap-3">
           {scanMsg && <div className={'text-sm ' + (scanMsg.startsWith('✓') ? 'text-emerald-700' : 'text-rose-700')}>{scanMsg}</div>}
           <button className="btn btn-primary" disabled={scanM.isPending} onClick={() => scanM.mutate()}>{scanM.isPending ? 'Scanning…' : 'Run overdue scan'}</button>

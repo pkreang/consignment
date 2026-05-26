@@ -47,7 +47,7 @@ export default function CustomerRoutesPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Customer</th>
@@ -56,24 +56,24 @@ export default function CustomerRoutesPage() {
             <th className="px-3 py-2 text-right">Actions</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={4} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={4} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((a) => (
               <tr key={a.customer_route_id} className="table-row">
-                <td className="px-3 py-2"><div>{a.customer?.customer_name}</div><div className="font-mono text-xs text-slate-500">{a.customer?.customer_code}</div></td>
-                <td className="px-3 py-2"><div>{a.route?.route_name}</div><div className="font-mono text-xs text-slate-500">{a.route?.route_code}</div></td>
+                <td className="px-3 py-2"><div>{a.customer?.customer_name}</div><div className="font-mono text-xs text-surface-500">{a.customer?.customer_code}</div></td>
+                <td className="px-3 py-2"><div>{a.route?.route_name}</div><div className="font-mono text-xs text-surface-500">{a.route?.route_code}</div></td>
                 <td className="px-3 py-2 text-xs">{a.visit_day ?? '—'}</td>
                 <td className="px-3 py-2 text-right">
                   <button className="btn btn-ghost px-2 py-1 text-rose-600" onClick={() => { if (confirm('Remove assignment?')) del.mutate(a.customer_route_id); }}>Remove</button>
                 </td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-slate-500">No assignments.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={4} className="px-3 py-4 text-surface-500">No assignments.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>

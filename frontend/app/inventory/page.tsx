@@ -95,7 +95,7 @@ function WarehouseTab({ low, setLow, page, setPage }: { low: boolean; setLow: (b
   });
   return (
     <>
-      <label className="flex items-center gap-2 text-sm text-slate-600">
+      <label className="flex items-center gap-2 text-sm text-surface-600">
         <input type="checkbox" checked={low} onChange={(e) => { setLow(e.target.checked); setPage(1); }} />
         Low stock only
       </label>

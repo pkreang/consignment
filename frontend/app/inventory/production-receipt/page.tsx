@@ -63,7 +63,7 @@ export default function ProductionReceiptPage() {
   return (
     <form className="space-y-4" onSubmit={submit}>
       <h1 className="text-2xl font-semibold">Production Receipt</h1>
-      <p className="text-sm text-slate-500">Receive finished goods into the warehouse. Optional lot info enables FEFO tracking.</p>
+      <p className="text-sm text-surface-500">Receive finished goods into the warehouse. Optional lot info enables FEFO tracking.</p>
       <div className="card grid gap-3 p-4 md:grid-cols-2">
         <div>
           <label className="label">Warehouse</label>
@@ -110,7 +110,7 @@ export default function ProductionReceiptPage() {
             ))}
           </tbody>
         </table>
-        <div className="border-t border-slate-200 px-3 py-2">
+        <div className="border-t border-surface-200 px-3 py-2">
           <button type="button" className="btn btn-ghost" onClick={() => setLines([...lines, { ...emptyLine }])}>+ Add line</button>
         </div>
       </div>

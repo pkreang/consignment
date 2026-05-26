@@ -88,7 +88,7 @@ export default function VisitDetailPage() {
 
       <section>
         <h2 className="mb-2 text-lg font-medium">Items</h2>
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="table-head">
@@ -116,7 +116,7 @@ export default function VisitDetailPage() {
                 </tr>
               ))}
               {data.items.length === 0 && (
-                <tr><td colSpan={8} className="px-3 py-4 text-slate-500">No items recorded yet.</td></tr>
+                <tr><td colSpan={8} className="px-3 py-4 text-surface-500">No items recorded yet.</td></tr>
               )}
             </tbody>
           </table>
@@ -129,9 +129,9 @@ export default function VisitDetailPage() {
           <ul className="card divide-y text-sm">
             {data.collections.map((c) => (
               <li key={c.collection_no} className="flex items-center justify-between px-4 py-2">
-                <span className="font-mono text-xs text-slate-500">{c.collection_no}</span>
+                <span className="font-mono text-xs text-surface-500">{c.collection_no}</span>
                 <span className="font-medium">{fmtMoney(c.amount_collected)} THB</span>
-                <span className="text-xs text-slate-500">{c.payment_method}</span>
+                <span className="text-xs text-surface-500">{c.payment_method}</span>
               </li>
             ))}
           </ul>
@@ -144,7 +144,7 @@ export default function VisitDetailPage() {
           <ul className="card divide-y text-sm">
             {data.arInvoices.map((inv) => (
               <li key={inv.invoice_no} className="flex items-center justify-between px-4 py-2">
-                <span className="font-mono text-xs text-slate-500">{inv.invoice_no}</span>
+                <span className="font-mono text-xs text-surface-500">{inv.invoice_no}</span>
                 <span className="font-medium">{fmtMoney(inv.total_amount)} THB</span>
                 <span className="flex items-center gap-3">
                   <a className="text-xs text-brand-600 hover:underline" href={`${API_BASE}/ar/invoices/${inv.ar_invoice_id}/pdf`} target="_blank" rel="noreferrer">PDF</a>
@@ -168,7 +168,7 @@ export default function VisitDetailPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-surface-500">{label}</div>
       <div className="mt-1 font-medium">{children}</div>
     </div>
   );
@@ -319,7 +319,7 @@ function ConfirmDialog({ visit, onClose, onDone }: { visit: VisitDetail; onClose
   return (
     <Modal title={`Confirm visit ${visit.visit_no}`} onClose={onClose}>
       <div className="space-y-3 text-sm">
-        <p className="text-slate-600">
+        <p className="text-surface-600">
           Total sales: <span className="font-medium">{fmtMoney(visit.total_sales_amount)} THB</span>
           {isCod && <span className="ml-2 text-xs text-amber-600">COD — full payment required</span>}
         </p>
@@ -392,7 +392,7 @@ function RecordItemsDialog({ visit, onClose, onDone }: { visit: VisitDetail; onC
     return (
       <Modal title={`Record items — ${visit.visit_no}`} onClose={onClose}>
         <div className="space-y-3 text-sm">
-          <p className="text-slate-500">No products in consignment yet. Load stock to the customer first via Operations → Load to Customer.</p>
+          <p className="text-surface-500">No products in consignment yet. Load stock to the customer first via Operations → Load to Customer.</p>
           <div className="flex justify-end pt-2">
             <button className="btn btn-ghost" onClick={onClose}>Close</button>
           </div>

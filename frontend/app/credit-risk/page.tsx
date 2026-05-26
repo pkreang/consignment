@@ -32,7 +32,7 @@ export default function CreditRiskPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-surface-600">
           {t('threshold')}
           <input
             type="number"
@@ -45,7 +45,7 @@ export default function CreditRiskPage() {
         </label>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -61,14 +61,14 @@ export default function CreditRiskPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={7} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
+                <td colSpan={7} className="px-3 py-4 text-surface-500">{tc('loading')}</td>
               </tr>
             )}
             {rows.map((r) => (
               <tr key={r.customer_id} className="table-row">
                 <td className="px-3 py-2">
                   <div className="font-medium">{r.customer_name}</div>
-                  <div className="text-xs text-slate-500">{r.customer_code}</div>
+                  <div className="text-xs text-surface-500">{r.customer_code}</div>
                 </td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(r.credit_limit)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(r.ar_outstanding)}</td>
@@ -95,7 +95,7 @@ export default function CreditRiskPage() {
             ))}
             {rows.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-sm text-slate-500">
+                <td colSpan={7} className="px-3 py-6 text-center text-sm text-surface-500">
                   {t('empty')}
                 </td>
               </tr>

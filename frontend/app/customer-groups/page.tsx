@@ -29,11 +29,11 @@ export default function CustomerGroupsPage() {
         <h1 className="text-2xl font-semibold">Customer Groups</h1>
         <button className="btn btn-primary" onClick={() => setCreating(true)}>New Group</button>
       </div>
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head"><th className="px-3 py-2">Name</th><th className="px-3 py-2 text-right">Actions</th></tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={2} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={2} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((g) => (
               <tr key={g.group_id} className="table-row">
                 <td className="px-3 py-2 font-medium">{g.group_name}</td>
@@ -43,12 +43,12 @@ export default function CustomerGroupsPage() {
                 </td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={2} className="px-3 py-4 text-slate-500">No groups.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={2} className="px-3 py-4 text-surface-500">No groups.</td></tr>}
           </tbody>
         </table>
       </div>
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>

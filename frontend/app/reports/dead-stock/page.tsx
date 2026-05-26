@@ -34,7 +34,7 @@ export default function DeadStockReport() {
         { label: 'Product', cell: (r) => r.product_name },
         { label: 'Warehouse qty', align: 'right', cell: (r) => fmtMoney(r.warehouse_qty) },
         { label: 'Consignment qty', align: 'right', cell: (r) => fmtMoney(r.consignment_qty) },
-        { label: 'Last sale', cell: (r) => <span className="text-xs text-slate-500">{r.last_sale ? fmtDate(r.last_sale).slice(0, 10) : 'never'}</span> },
+        { label: 'Last sale', cell: (r) => <span className="text-xs text-surface-500">{r.last_sale ? fmtDate(r.last_sale).slice(0, 10) : 'never'}</span> },
         { label: 'Days idle', align: 'right', cell: (r) => r.days_since_last_sale ?? '∞' },
       ]}
     />

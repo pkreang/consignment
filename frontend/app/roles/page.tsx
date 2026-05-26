@@ -35,15 +35,15 @@ export default function RolesPage() {
         <h1 className="text-2xl font-semibold">Roles & Permissions</h1>
         <button className="btn btn-primary" onClick={() => setCreating(true)}>New Role</button>
       </div>
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head"><th className="px-3 py-2">Role</th><th className="px-3 py-2">Permissions</th><th className="px-3 py-2 text-right">Actions</th></tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={3} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={3} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((r) => (
               <tr key={r.role_id} className="table-row">
                 <td className="px-3 py-2 font-medium">{r.role_name}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{r.permissions?.length ?? 0} permission(s)</td>
+                <td className="px-3 py-2 text-xs text-surface-500">{r.permissions?.length ?? 0} permission(s)</td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setEditing(r)}>Rename</button>
                   <button className="btn btn-ghost px-2 py-1" onClick={() => setPermEditing(r)}>Permissions</button>
@@ -51,7 +51,7 @@ export default function RolesPage() {
                 </td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={3} className="px-3 py-4 text-slate-500">No roles.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={3} className="px-3 py-4 text-surface-500">No roles.</td></tr>}
           </tbody>
         </table>
       </div>
@@ -118,14 +118,14 @@ function PermissionEditor({ role, onClose, onSaved }: { role: Role; onClose: () 
   return (
     <Modal title={`Permissions — ${role.role_name}`} onClose={onClose}>
       <div className="space-y-3 text-sm">
-        {!allPerms.data && <div className="text-slate-500">Loading…</div>}
+        {!allPerms.data && <div className="text-surface-500">Loading…</div>}
         <div className="max-h-[60vh] space-y-3 overflow-y-auto">
           {Array.from(grouped.entries()).map(([mod, perms]) => (
             <div key={mod}>
-              <div className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-500">{mod}</div>
+              <div className="mb-1 text-xs font-medium uppercase tracking-wider text-surface-500">{mod}</div>
               <div className="grid grid-cols-2 gap-1">
                 {perms.map((p) => (
-                  <label key={p.permission_id} className="flex items-start gap-2 rounded-md px-2 py-1 hover:bg-slate-50">
+                  <label key={p.permission_id} className="flex items-start gap-2 rounded-md px-2 py-1 hover:bg-surface-50">
                     <input
                       type="checkbox"
                       checked={selected.has(p.permission_id)}
@@ -137,7 +137,7 @@ function PermissionEditor({ role, onClose, onSaved }: { role: Role; onClose: () 
                         });
                       }}
                     />
-                    <span><span className="font-mono text-xs">{p.permission_code}</span>{p.description && <div className="text-xs text-slate-500">{p.description}</div>}</span>
+                    <span><span className="font-mono text-xs">{p.permission_code}</span>{p.description && <div className="text-xs text-surface-500">{p.description}</div>}</span>
                   </label>
                 ))}
               </div>

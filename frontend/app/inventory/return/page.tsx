@@ -79,7 +79,7 @@ export default function ReturnPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2 text-left">Product</th>
@@ -112,14 +112,14 @@ export default function ReturnPage() {
             ))}
           </tbody>
         </table>
-        <div className="border-t border-slate-200 px-3 py-2">
+        <div className="border-t border-surface-200 px-3 py-2">
           <button type="button" className="btn btn-ghost" onClick={() => setLines([...lines, { product_id: '', qty: '', unit_price: '' }])}>+ Add line</button>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-500">
-          Estimated value: <span className="font-mono font-medium text-slate-900">{fmtMoney(lines.reduce((s, l) => s + Number(l.qty || 0) * Number(l.unit_price || 0), 0))}</span>
+        <div className="text-sm text-surface-500">
+          Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(lines.reduce((s, l) => s + Number(l.qty || 0) * Number(l.unit_price || 0), 0))}</span>
         </div>
         <div className="flex items-center gap-3">
           {error && <div className="text-sm text-rose-600">{error}</div>}

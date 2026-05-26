@@ -31,8 +31,8 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-2 text-2xl font-semibold text-slate-800">{t('title')}</h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <h1 className="mb-2 text-2xl font-semibold text-surface-800">{t('title')}</h1>
+      <p className="mb-6 text-sm text-surface-500">
         {t('defaultAdmin')} <span className="font-mono">admin / Admin@12345</span>
       </p>
       <form onSubmit={onSubmit} className="card space-y-4 p-6">

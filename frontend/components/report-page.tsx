@@ -76,13 +76,13 @@ export function ReportPage<T>({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{title}</h1>
-          {description && <p className="text-sm text-slate-500">{description}</p>}
+          {description && <p className="text-sm text-surface-500">{description}</p>}
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {withDateRange && (
             <>
               <input type="date" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
-              <span className="text-sm text-slate-400">to</span>
+              <span className="text-sm text-surface-400">to</span>
               <input type="date" className="input" value={to} onChange={(e) => setTo(e.target.value)} />
             </>
           )}
@@ -101,7 +101,7 @@ export function ReportPage<T>({
             </tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={columns.length} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={columns.length} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.map((row, i) => (
               <tr key={rowKey(row, i)} className="table-row">
                 {columns.map((c, j) => (
@@ -112,14 +112,14 @@ export function ReportPage<T>({
               </tr>
             ))}
             {data && data.length === 0 && (
-              <tr><td colSpan={columns.length} className="px-3 py-4 text-slate-500">No data.</td></tr>
+              <tr><td colSpan={columns.length} className="px-3 py-4 text-surface-500">No data.</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       {data && data.length > 0 && (
-        <div className="text-right text-sm text-slate-500">{data.length} row{data.length === 1 ? '' : 's'}</div>
+        <div className="text-right text-sm text-surface-500">{data.length} row{data.length === 1 ? '' : 's'}</div>
       )}
     </div>
   );

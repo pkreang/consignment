@@ -64,7 +64,7 @@ export default function ArPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Invoice #</th>
@@ -77,15 +77,15 @@ export default function ArPage() {
             <th className="px-3 py-2 text-right">Actions</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={8} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={8} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((inv) => (
               <tr key={inv.ar_invoice_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">
                   <Link href={`/ar/${inv.ar_invoice_id}`} className="text-brand-600 hover:underline">{inv.invoice_no}</Link>
                 </td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(inv.invoice_date)}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(inv.due_date)}</td>
-                <td className="px-3 py-2"><div>{inv.customer?.customer_name}</div><div className="font-mono text-xs text-slate-500">{inv.customer?.customer_code}</div></td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(inv.invoice_date)}</td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(inv.due_date)}</td>
+                <td className="px-3 py-2"><div>{inv.customer?.customer_name}</div><div className="font-mono text-xs text-surface-500">{inv.customer?.customer_code}</div></td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(inv.total_amount)}</td>
                 <td className="px-3 py-2 text-right font-mono font-medium">{fmtMoney(inv.outstanding_amount)}</td>
                 <td className="px-3 py-2"><span className={`pill ${pillForStatus(inv.status)}`}>{inv.status}</span></td>
@@ -97,13 +97,13 @@ export default function ArPage() {
                 </td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={8} className="px-3 py-4 text-slate-500">No invoices.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={8} className="px-3 py-4 text-surface-500">No invoices.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total.toLocaleString()} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
@@ -188,7 +188,7 @@ function CreateInvoice({ onClose, onDone }: { onClose: () => void; onDone: () =>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
 
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead><tr className="table-head">
               <th className="px-2 py-1 text-left">Product</th>
@@ -215,13 +215,13 @@ function CreateInvoice({ onClose, onDone }: { onClose: () => void; onDone: () =>
               ))}
             </tbody>
           </table>
-          <div className="border-t border-slate-200 px-2 py-2">
+          <div className="border-t border-surface-200 px-2 py-2">
             <button type="button" className="btn btn-ghost" onClick={() => setLines([...lines, { product_id: '', qty: '', unit_price: '' }])}>+ Add line</button>
           </div>
         </div>
 
-        <div className="text-right text-sm text-slate-500">
-          Total: <span className="font-mono font-medium text-slate-900">{fmtMoney(total)}</span>
+        <div className="text-right text-sm text-surface-500">
+          Total: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span>
         </div>
         {error && <div className="text-sm text-rose-600">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
@@ -259,7 +259,7 @@ function PaymentDialog({ invoice, onClose, onDone }: { invoice: Invoice; onClose
   return (
     <Modal title={`Pay invoice ${invoice.invoice_no}`} onClose={onClose}>
       <form className="space-y-3" onSubmit={submit}>
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-surface-600">
           Customer: <span className="font-medium">{invoice.customer.customer_name}</span> · Outstanding: <span className="font-mono">{fmtMoney(invoice.outstanding_amount)}</span>
         </div>
         <div className="grid grid-cols-2 gap-3">

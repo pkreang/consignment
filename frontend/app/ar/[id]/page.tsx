@@ -64,7 +64,7 @@ export default function ArDetailPage() {
 
       <section>
         <h2 className="mb-2 text-lg font-medium">Line items</h2>
-        <div className="card overflow-hidden">
+        <div className="card overflow-x-auto">
           <table className="w-full">
             <thead><tr className="table-head">
               <th className="px-3 py-2">SKU</th>
@@ -91,15 +91,15 @@ export default function ArDetailPage() {
       <section>
         <h2 className="mb-2 text-lg font-medium">Payments</h2>
         {data.payments.length === 0 ? (
-          <div className="card p-4 text-sm text-slate-500">No payments yet.</div>
+          <div className="card p-4 text-sm text-surface-500">No payments yet.</div>
         ) : (
           <ul className="card divide-y text-sm">
             {data.payments.map((p) => (
               <li key={p.ar_payment_id} className="flex items-center justify-between px-4 py-2">
-                <span className="text-xs text-slate-500">{fmtDate(p.payment_date)}</span>
+                <span className="text-xs text-surface-500">{fmtDate(p.payment_date)}</span>
                 <span className="font-medium">{fmtMoney(p.amount)} THB</span>
-                <span className="pill bg-slate-100 text-slate-700 text-xs">{p.payment_method}</span>
-                <span className="text-xs text-slate-500">{p.reference_no ?? '—'}</span>
+                <span className="pill bg-surface-100 text-surface-700 text-xs">{p.payment_method}</span>
+                <span className="text-xs text-surface-500">{p.reference_no ?? '—'}</span>
               </li>
             ))}
           </ul>
@@ -112,7 +112,7 @@ export default function ArDetailPage() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
+      <div className="text-xs uppercase tracking-wider text-surface-500">{label}</div>
       <div className="mt-1 font-medium">{children}</div>
     </div>
   );

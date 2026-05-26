@@ -103,7 +103,7 @@ export default function LoadPage() {
       <Lines lines={lines} setLines={setLines} products={products.data ?? []} />
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-500">Estimated value: <span className="font-mono font-medium text-slate-900">{fmtMoney(total)}</span></div>
+        <div className="text-sm text-surface-500">Estimated value: <span className="font-mono font-medium text-surface-900">{fmtMoney(total)}</span></div>
         <div className="flex gap-2">
           {error && <div className="text-sm text-rose-600">{error}</div>}
           <button type="submit" className="btn btn-primary" disabled={m.isPending}>
@@ -128,7 +128,7 @@ function Lines({
   const add = () => setLines([...lines, { product_id: '', qty: '', unit_price: '' }]);
 
   return (
-    <div className="card overflow-hidden">
+    <div className="card overflow-x-auto">
       <table className="w-full">
         <thead><tr className="table-head">
           <th className="px-3 py-2 text-left">Product</th>
@@ -161,7 +161,7 @@ function Lines({
           ))}
         </tbody>
       </table>
-      <div className="border-t border-slate-200 px-3 py-2">
+      <div className="border-t border-surface-200 px-3 py-2">
         <button type="button" className="btn btn-ghost" onClick={add}>+ Add line</button>
       </div>
     </div>

@@ -14,7 +14,7 @@ export default function ArOutstandingReport() {
       withDateRange={false}
       rowKey={(r) => r.customer_id}
       columns={[
-        { label: 'Customer', cell: (r) => (<Link className="text-brand-600 hover:underline" href={`/ar?customerId=${r.customer_id}`}><div className="font-medium">{r.customer_name}</div><div className="font-mono text-xs text-slate-500">{r.customer_code}</div></Link>) },
+        { label: 'Customer', cell: (r) => (<Link className="text-brand-600 hover:underline" href={`/ar?customerId=${r.customer_id}`}><div className="font-medium">{r.customer_name}</div><div className="font-mono text-xs text-surface-500">{r.customer_code}</div></Link>) },
         { label: 'Open invoices', align: 'right', cell: (r) => r.open_count.toLocaleString() },
         { label: 'Outstanding (THB)', align: 'right', cell: (r) => fmtMoney(r.total_outstanding) },
       ]}

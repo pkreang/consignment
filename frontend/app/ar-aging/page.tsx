@@ -49,9 +49,9 @@ export default function ArAgingPage() {
           const row = data?.summary?.[b];
           return (
             <div key={b} className="card p-4">
-              <div className="text-xs uppercase tracking-wider text-slate-500">{b}</div>
+              <div className="text-xs uppercase tracking-wider text-surface-500">{b}</div>
               <div className="mt-1 text-xl font-semibold">{fmtMoney(row?.amount ?? '0')}</div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-surface-500">
                 {t('invoiceCount', { count: row?.count ?? 0 })}
               </div>
             </div>
@@ -59,7 +59,7 @@ export default function ArAgingPage() {
         })}
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -77,7 +77,7 @@ export default function ArAgingPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={9} className="px-3 py-4 text-slate-500">
+                <td colSpan={9} className="px-3 py-4 text-surface-500">
                   {tc('loading')}
                 </td>
               </tr>
@@ -102,7 +102,7 @@ export default function ArAgingPage() {
                   {fmtMoney(inv.outstanding_amount)}
                 </td>
                 <td className="px-3 py-2">
-                  <span className="pill bg-slate-100 text-slate-700">{inv.aging_bucket}</span>
+                  <span className="pill bg-surface-100 text-surface-700">{inv.aging_bucket}</span>
                 </td>
                 <td className="px-3 py-2">
                   <span className={`pill ${pillForStatus(inv.status)}`}>{inv.status}</span>
@@ -158,7 +158,7 @@ function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-4"
+      className="fixed inset-0 z-30 flex items-center justify-center bg-surface-900/40 dark:bg-black/60 px-4"
       onClick={onClose}
     >
       <div
@@ -168,7 +168,7 @@ function PayDialog({ inv, onClose }: { inv: Invoice; onClose: () => void }) {
         <h3 className="text-lg font-semibold">
           {t('payModalTitle', { invoiceNo: inv.invoice_no })}
         </h3>
-        <div className="text-slate-600">
+        <div className="text-surface-600">
           {t('outstandingLabel')}{' '}
           <span className="font-medium">{fmtMoney(inv.outstanding_amount)} THB</span>
         </div>

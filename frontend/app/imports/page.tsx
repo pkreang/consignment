@@ -41,14 +41,14 @@ export default function ImportsPage() {
     <div className="space-y-5">
       <h1 className="text-2xl font-semibold">CSV Bulk Import</h1>
 
-      <div className="flex gap-1 border-b border-slate-200 text-sm">
+      <div className="flex gap-1 border-b border-surface-200 text-sm">
         {(['products', 'customers'] as Kind[]).map((k) => (
           <button
             key={k}
             onClick={() => { setKind(k); setResult(null); setErrs(null); setErrorMsg(null); }}
             className={
               'border-b-2 px-3 py-2 capitalize ' +
-              (kind === k ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-slate-500 hover:text-slate-700')
+              (kind === k ? 'border-brand-600 font-medium text-brand-700' : 'border-transparent text-surface-500 hover:text-surface-700')
             }
           >
             {k}
@@ -58,7 +58,7 @@ export default function ImportsPage() {
 
       <div className="card space-y-3 p-4">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-500">Upload a CSV file or paste CSV content. Rows are upserted by natural key inside one transaction.</div>
+          <div className="text-sm text-surface-500">Upload a CSV file or paste CSV content. Rows are upserted by natural key inside one transaction.</div>
           <a className="btn btn-ghost" href={`${API_BASE}/imports/${kind}/sample.csv`} target="_blank" rel="noreferrer">Download template</a>
         </div>
 

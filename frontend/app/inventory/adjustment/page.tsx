@@ -51,7 +51,7 @@ export default function AdjustmentPage() {
   return (
     <form className="space-y-4" onSubmit={submit}>
       <h1 className="text-2xl font-semibold">Warehouse Stock Adjustment</h1>
-      <p className="text-sm text-slate-500">Use positive delta to add, negative to subtract (e.g. -3 for 3 units shrinkage).</p>
+      <p className="text-sm text-surface-500">Use positive delta to add, negative to subtract (e.g. -3 for 3 units shrinkage).</p>
       <div className="card grid gap-3 p-4 md:grid-cols-2">
         <div>
           <label className="label">Warehouse</label>
@@ -68,7 +68,7 @@ export default function AdjustmentPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2 text-left">Product</th>
@@ -98,7 +98,7 @@ export default function AdjustmentPage() {
             ))}
           </tbody>
         </table>
-        <div className="border-t border-slate-200 px-3 py-2">
+        <div className="border-t border-surface-200 px-3 py-2">
           <button type="button" className="btn btn-ghost" onClick={() => setLines([...lines, { product_id: '', delta_qty: '', unit_cost: '' }])}>+ Add line</button>
         </div>
       </div>

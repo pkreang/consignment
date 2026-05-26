@@ -70,7 +70,7 @@ export default function AuditPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="table-head">
@@ -85,7 +85,7 @@ export default function AuditPage() {
           <tbody>
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-3 py-4 text-slate-500">{tc('loading')}</td>
+                <td colSpan={6} className="px-3 py-4 text-surface-500">{tc('loading')}</td>
               </tr>
             )}
             {data?.data.map((row) => (
@@ -97,7 +97,7 @@ export default function AuditPage() {
                 <td className="px-3 py-2 font-mono text-xs">{row.table_name}</td>
                 <td className="px-3 py-2 font-mono text-xs">{row.record_id ?? '—'}</td>
                 <td className="px-3 py-2 text-xs">
-                  {row.changedBy?.username ?? <span className="text-slate-400">{t('system')}</span>}
+                  {row.changedBy?.username ?? <span className="text-surface-400">{t('system')}</span>}
                 </td>
                 <td className="px-3 py-2">
                   <details>
@@ -111,7 +111,7 @@ export default function AuditPage() {
                       </pre>
                     </div>
                     {row.context ? (
-                      <pre className="mt-2 overflow-x-auto rounded bg-slate-100 p-2 text-[11px]">
+                      <pre className="mt-2 overflow-x-auto rounded bg-surface-100 p-2 text-[11px]">
                         {t('contextLabel')} {JSON.stringify(row.context, null, 2)}
                       </pre>
                     ) : null}
@@ -124,7 +124,7 @@ export default function AuditPage() {
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>{tc('pagination', { total: data.total.toLocaleString(), page })}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>

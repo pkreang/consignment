@@ -48,7 +48,7 @@ export default function CollectionsPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Collection #</th>
@@ -60,25 +60,25 @@ export default function CollectionsPage() {
             <th className="px-3 py-2">Reference</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((c) => (
               <tr key={c.collection_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{c.collection_no}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(c.collection_date)}</td>
-                <td className="px-3 py-2"><div>{c.customer?.customer_name}</div><div className="font-mono text-xs text-slate-500">{c.customer?.customer_code}</div></td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(c.collection_date)}</td>
+                <td className="px-3 py-2"><div>{c.customer?.customer_name}</div><div className="font-mono text-xs text-surface-500">{c.customer?.customer_code}</div></td>
                 <td className="px-3 py-2 text-xs">{c.collector?.employee_name ?? '—'}</td>
                 <td className="px-3 py-2 text-right font-mono font-medium">{fmtMoney(c.amount_collected)}</td>
-                <td className="px-3 py-2"><span className="pill bg-slate-100 text-slate-700">{c.payment_method}</span></td>
-                <td className="px-3 py-2 text-xs text-slate-500">{c.reference_no ?? '—'}</td>
+                <td className="px-3 py-2"><span className="pill bg-surface-100 text-surface-700">{c.payment_method}</span></td>
+                <td className="px-3 py-2 text-xs text-surface-500">{c.reference_no ?? '—'}</td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">No collections.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">No collections.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total.toLocaleString()} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
@@ -165,7 +165,7 @@ function CreateForm({ onClose, onDone }: { onClose: () => void; onDone: () => vo
           <label className="label">Note</label>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
-        <p className="text-xs text-slate-500">Payment is allocated to oldest open AR invoices first (FIFO).</p>
+        <p className="text-xs text-surface-500">Payment is allocated to oldest open AR invoices first (FIFO).</p>
         {error && <div className="text-sm text-rose-600">{error}</div>}
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn btn-ghost" onClick={onClose}>Cancel</button>

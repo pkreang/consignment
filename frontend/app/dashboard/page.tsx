@@ -65,7 +65,7 @@ export default function DashboardPage() {
         </div>
       )}
       <details className="card p-4 text-sm">
-        <summary className="cursor-pointer text-slate-500">{t('rawPayload')}</summary>
+        <summary className="cursor-pointer text-surface-500">{t('rawPayload')}</summary>
         <pre className="mt-3 overflow-x-auto text-xs">
           {JSON.stringify(data ?? {}, null, 2)}
         </pre>
@@ -77,10 +77,10 @@ export default function DashboardPage() {
 function Kpi({ label, value, suffix }: { label: string; value: string; suffix?: string }) {
   return (
     <div className="card p-4">
-      <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="mt-1 text-2xl font-semibold text-slate-800">
+      <div className="text-xs uppercase tracking-wider text-surface-500">{label}</div>
+      <div className="mt-1 text-2xl font-semibold text-surface-800">
         {value}
-        {suffix && <span className="ml-1 text-sm font-normal text-slate-400">{suffix}</span>}
+        {suffix && <span className="ml-1 text-sm font-normal text-surface-400">{suffix}</span>}
       </div>
     </div>
   );

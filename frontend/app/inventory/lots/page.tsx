@@ -48,7 +48,7 @@ export default function LotsPage() {
         </div>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <table className="w-full">
           <thead><tr className="table-head">
             <th className="px-3 py-2">Lot no</th>
@@ -60,25 +60,25 @@ export default function LotsPage() {
             <th className="px-3 py-2 text-right">Unit cost</th>
           </tr></thead>
           <tbody>
-            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">Loading…</td></tr>}
             {data?.data.map((l) => (
               <tr key={l.lot_id} className="table-row">
                 <td className="px-3 py-2 font-mono text-xs">{l.lot_no}</td>
-                <td className="px-3 py-2"><div>{l.product?.product_name}</div><div className="font-mono text-xs text-slate-500">{l.product?.sku_code}</div></td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(l.manufacturing_date)}</td>
-                <td className="px-3 py-2 text-xs text-slate-500">{fmtDate(l.expiry_date)}</td>
+                <td className="px-3 py-2"><div>{l.product?.product_name}</div><div className="font-mono text-xs text-surface-500">{l.product?.sku_code}</div></td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(l.manufacturing_date)}</td>
+                <td className="px-3 py-2 text-xs text-surface-500">{fmtDate(l.expiry_date)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(l.qty_received)}</td>
                 <td className="px-3 py-2 text-right font-mono font-medium">{fmtMoney(l.qty_remaining)}</td>
                 <td className="px-3 py-2 text-right font-mono">{fmtMoney(l.unit_cost)}</td>
               </tr>
             ))}
-            {data && data.data.length === 0 && <tr><td colSpan={7} className="px-3 py-4 text-slate-500">No lots.</td></tr>}
+            {data && data.data.length === 0 && <tr><td colSpan={7} className="px-3 py-4 text-surface-500">No lots.</td></tr>}
           </tbody>
         </table>
       </div>
 
       {data && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
+        <div className="flex items-center justify-between text-sm text-surface-500">
           <div>Total: {data.total.toLocaleString()} • Page {page}</div>
           <div className="flex gap-1">
             <button className="btn btn-ghost" disabled={page <= 1} onClick={() => setPage(page - 1)}>Prev</button>
