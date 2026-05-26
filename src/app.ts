@@ -17,6 +17,10 @@ export function createApp(): Express {
   const app = express();
 
   app.disable('x-powered-by');
+  // Disable conditional GET / 304 responses globally. Our API is all
+  // dynamic JSON, and ETag handling on /health and /ready made
+  // pre-warm pings look like 304s in DevTools.
+  app.set('etag', false);
   app.use(
     helmet({
       contentSecurityPolicy: false,
