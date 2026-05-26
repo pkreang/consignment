@@ -37,17 +37,23 @@ export function isAuthed(): boolean {
   return !!getToken();
 }
 
-/** Fire a no-auth GET /health against the API root to wake a sleeping
- *  Render free-tier dyno while the user is still typing credentials.
+/** Fire a no-auth GET /ready against the API root to wake both the
+ *  Render dyno AND the Neon DB while the user is still typing.
+ *
+ *  Why /ready not /health: /health just returns JSON (wakes Render only),
+ *  /ready runs `SELECT 1` through Prisma which forces Neon's auto-suspended
+ *  compute to resume too. The first auth/login query would otherwise pay
+ *  that 1-3s Neon cold-start on top of bcrypt.
+ *
  *  Silent best-effort — never throws, never blocks. */
 export function prewarmBackend(): void {
   if (typeof window === 'undefined') return;
   const base = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!base) return;
   try {
-    fetch(`${base}/health`, {
+    fetch(`${base}/ready`, {
       method: 'GET',
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(90_000),
     }).catch(() => {});
   } catch {
     // AbortSignal.timeout unsupported on very old browsers — ignore.
