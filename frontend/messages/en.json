@@ -83,8 +83,7 @@
     "hidePassword": "Hide",
     "submit": "Sign in",
     "submitting": "Signing in…",
-    "warming": "Preparing server…",
-    "warmingHint": "First visit of the day may take ~30s"
+    "warming": "Loading…"
   },
   "dashboard": {
     "title": "Dashboard",

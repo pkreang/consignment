@@ -137,10 +137,6 @@ export default function LoginPage() {
                   : t('submit')}
             </button>
 
-            {warming === 'pending' && (
-              <p className="text-center text-xs text-surface-500">{t('warmingHint')}</p>
-            )}
-
             <p className="rounded-md bg-surface-50 px-3 py-2 text-xs text-surface-500 dark:bg-surface-800/50 dark:text-surface-400">
               {t('defaultAdmin')}{' '}
               <span className="font-mono text-surface-700 dark:text-surface-200">
