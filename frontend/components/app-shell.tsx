@@ -2,7 +2,8 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { isAuthed } from '@/lib/api';
+import { hasPermission, isAuthed } from '@/lib/api';
+import { requiredPermission } from '@/lib/route-permissions';
 import { Sidebar } from '@/components/sidebar';
 import { Topbar } from '@/components/topbar';
 
@@ -10,10 +11,11 @@ import { Topbar } from '@/components/topbar';
  * Top-level layout. Renders sidebar + topbar for app pages, and just
  * a plain centered container for /login (no chrome).
  *
- * Also enforces auth: any non-/login route is gated behind an
- * isAuthed() check that runs before children paint, so an
- * unauthenticated user lands directly on /login without flashing
- * the protected page first.
+ * Enforces two gates before painting children:
+ *  1. Authentication — unauthenticated → /login.
+ *  2. Authorization — if the URL requires a permission the user lacks,
+ *     bounce to /dashboard so they don't land on a page that will just
+ *     show a 403 from the API.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -21,12 +23,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isLogin = pathname === '/login';
 
-  // null = haven't checked yet (SSR + first paint), true/false = checked
-  const [authed, setAuthed] = useState<boolean | null>(null);
+  // null = haven't checked yet (SSR + first paint), 'ok' / 'denied' = checked
+  const [gate, setGate] = useState<'pending' | 'ok' | 'denied'>('pending');
   useEffect(() => {
-    const ok = isAuthed();
-    setAuthed(ok);
-    if (!ok && !isLogin) router.replace('/login');
+    if (isLogin) {
+      setGate('ok');
+      return;
+    }
+    if (!isAuthed()) {
+      setGate('denied');
+      router.replace('/login');
+      return;
+    }
+    const needed = requiredPermission(pathname);
+    if (needed && !hasPermission(needed)) {
+      setGate('denied');
+      router.replace('/dashboard');
+      return;
+    }
+    setGate('ok');
   }, [pathname, isLogin, router]);
 
   if (isLogin) {
@@ -37,10 +52,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Render nothing until we know the user is authed — prevents the
-  // protected page from flashing on screen while the client guard
-  // is still figuring out where to send them.
-  if (authed !== true) {
+  // Render nothing while the gates are being checked or after a denial —
+  // prevents the protected page from flashing during redirect.
+  if (gate !== 'ok') {
     return <div className="min-h-screen bg-surface-50 dark:bg-surface-950" />;
   }
 

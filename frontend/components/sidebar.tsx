@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { hasPermission } from '@/lib/api';
+import { requiredPermission } from '@/lib/route-permissions';
 import {
   BellIcon,
   BoxIcon,
@@ -28,8 +29,6 @@ type Item = {
   href: string;
   label: string;
   icon?: React.ComponentType<{ className?: string }>;
-  // Permission required to see this item. Undefined = always visible.
-  permission?: string;
 };
 type Section = { id: string; label: string; icon: React.ComponentType<{ className?: string }>; items: Item[] };
 
@@ -48,10 +47,10 @@ function buildSections(t: T): Section[] {
       label: t('operations'),
       icon: TruckIcon,
       items: [
-        { href: '/visits', label: t('visits'), icon: ClipboardIcon, permission: 'visit.read' },
-        { href: '/collections', label: t('collections'), icon: CreditCardIcon, permission: 'collection.read' },
-        { href: '/ar', label: t('ar'), icon: FileTextIcon, permission: 'ar.read' },
-        { href: '/ar-aging', label: t('arAging'), icon: ChartIcon, permission: 'ar.read' },
+        { href: '/visits', label: t('visits'), icon: ClipboardIcon },
+        { href: '/collections', label: t('collections'), icon: CreditCardIcon },
+        { href: '/ar', label: t('ar'), icon: FileTextIcon },
+        { href: '/ar-aging', label: t('arAging'), icon: ChartIcon },
       ],
     },
     {
@@ -59,12 +58,12 @@ function buildSections(t: T): Section[] {
       label: t('inventory'),
       icon: BoxIcon,
       items: [
-        { href: '/inventory', label: t('stock'), icon: BoxIcon, permission: 'inventory.read' },
-        { href: '/inventory/load', label: t('load'), permission: 'inventory.load' },
-        { href: '/inventory/return', label: t('return'), permission: 'inventory.return' },
-        { href: '/inventory/adjustment', label: t('adjustment'), permission: 'inventory.adjust' },
-        { href: '/inventory/production-receipt', label: t('production'), permission: 'inventory.production_receipt' },
-        { href: '/inventory/lots', label: t('lots'), permission: 'inventory.read' },
+        { href: '/inventory', label: t('stock'), icon: BoxIcon },
+        { href: '/inventory/load', label: t('load') },
+        { href: '/inventory/return', label: t('return') },
+        { href: '/inventory/adjustment', label: t('adjustment') },
+        { href: '/inventory/production-receipt', label: t('production') },
+        { href: '/inventory/lots', label: t('lots') },
       ],
     },
     {
@@ -72,14 +71,14 @@ function buildSections(t: T): Section[] {
       label: t('master'),
       icon: UsersIcon,
       items: [
-        { href: '/customers', label: t('customers'), icon: UsersIcon, permission: 'customer.read' },
-        { href: '/customer-groups', label: t('customerGroups'), permission: 'customer.read' },
-        { href: '/customer-routes', label: t('customerRoutes'), permission: 'customer.read' },
-        { href: '/products', label: t('products'), icon: BoxIcon, permission: 'product.read' },
-        { href: '/product-categories', label: t('productCategories'), permission: 'product.read' },
-        { href: '/warehouses', label: t('warehouses'), permission: 'warehouse.read' },
-        { href: '/routes', label: t('routes'), icon: MapPinIcon, permission: 'route.read' },
-        { href: '/employees', label: t('employees'), permission: 'employee.read' },
+        { href: '/customers', label: t('customers'), icon: UsersIcon },
+        { href: '/customer-groups', label: t('customerGroups') },
+        { href: '/customer-routes', label: t('customerRoutes') },
+        { href: '/products', label: t('products'), icon: BoxIcon },
+        { href: '/product-categories', label: t('productCategories') },
+        { href: '/warehouses', label: t('warehouses') },
+        { href: '/routes', label: t('routes'), icon: MapPinIcon },
+        { href: '/employees', label: t('employees') },
       ],
     },
     {
@@ -87,18 +86,18 @@ function buildSections(t: T): Section[] {
       label: t('reports'),
       icon: ChartIcon,
       items: [
-        { href: '/credit-risk', label: t('creditRisk'), permission: 'credit.read' },
-        { href: '/reports/ar-outstanding', label: t('arOutstanding'), permission: 'report.read' },
-        { href: '/reports/sales-by-customer', label: t('salesByCustomer'), permission: 'report.read' },
-        { href: '/reports/sales-by-sku', label: t('salesBySku'), permission: 'report.read' },
-        { href: '/reports/sales-by-employee', label: t('salesByEmployee'), permission: 'report.read' },
-        { href: '/reports/current-stock', label: t('currentStock'), permission: 'report.read' },
-        { href: '/reports/consignment-stock', label: t('consignmentStock'), permission: 'report.read' },
-        { href: '/reports/collection', label: t('collectionReport'), permission: 'report.read' },
-        { href: '/reports/best-sellers', label: t('bestSellers'), permission: 'report.read' },
-        { href: '/reports/slow-movers', label: t('slowMovers'), permission: 'report.read' },
-        { href: '/reports/dead-stock', label: t('deadStock'), permission: 'report.read' },
-        { href: '/reports/production-planning', label: t('productionPlanning'), permission: 'report.read' },
+        { href: '/credit-risk', label: t('creditRisk') },
+        { href: '/reports/ar-outstanding', label: t('arOutstanding') },
+        { href: '/reports/sales-by-customer', label: t('salesByCustomer') },
+        { href: '/reports/sales-by-sku', label: t('salesBySku') },
+        { href: '/reports/sales-by-employee', label: t('salesByEmployee') },
+        { href: '/reports/current-stock', label: t('currentStock') },
+        { href: '/reports/consignment-stock', label: t('consignmentStock') },
+        { href: '/reports/collection', label: t('collectionReport') },
+        { href: '/reports/best-sellers', label: t('bestSellers') },
+        { href: '/reports/slow-movers', label: t('slowMovers') },
+        { href: '/reports/dead-stock', label: t('deadStock') },
+        { href: '/reports/production-planning', label: t('productionPlanning') },
       ],
     },
     {
@@ -106,11 +105,11 @@ function buildSections(t: T): Section[] {
       label: t('system'),
       icon: CogIcon,
       items: [
-        { href: '/users', label: t('users'), icon: UsersIcon, permission: 'user.read' },
-        { href: '/roles', label: t('roles'), icon: ShieldIcon, permission: 'user.read' },
-        { href: '/audit', label: t('audit'), icon: ListIcon, permission: 'user.read' },
-        { href: '/imports', label: t('imports'), icon: UploadIcon, permission: 'user.write' },
-        { href: '/notifications', label: t('notifications'), icon: BellIcon, permission: 'user.write' },
+        { href: '/users', label: t('users'), icon: UsersIcon },
+        { href: '/roles', label: t('roles'), icon: ShieldIcon },
+        { href: '/audit', label: t('audit'), icon: ListIcon },
+        { href: '/imports', label: t('imports'), icon: UploadIcon },
+        { href: '/notifications', label: t('notifications'), icon: BellIcon },
       ],
     },
   ];
@@ -132,11 +131,14 @@ export function Sidebar({
   const t = useTranslations('nav');
 
   // Filter items by the JWT permissions; drop sections that end up empty.
-  // Items with no `permission` field stay visible (e.g. Dashboard).
+  // Routes not listed in ROUTE_PERMISSIONS (e.g. /dashboard) stay visible.
   const sections = buildSections(t)
     .map((s) => ({
       ...s,
-      items: s.items.filter((it) => !it.permission || hasPermission(it.permission)),
+      items: s.items.filter((it) => {
+        const perm = requiredPermission(it.href);
+        return !perm || hasPermission(perm);
+      }),
     }))
     .filter((s) => s.items.length > 0);
 
