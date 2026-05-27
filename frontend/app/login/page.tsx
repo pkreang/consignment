@@ -11,8 +11,8 @@ export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations('login');
   const errorMessage = useErrorMessage();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('Admin@12345');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,13 +136,6 @@ export default function LoginPage() {
                   ? t('warming')
                   : t('submit')}
             </button>
-
-            <p className="rounded-md bg-surface-50 px-3 py-2 text-xs text-surface-500 dark:bg-surface-800/50 dark:text-surface-400">
-              {t('defaultAdmin')}{' '}
-              <span className="font-mono text-surface-700 dark:text-surface-200">
-                admin / Admin@12345
-              </span>
-            </p>
           </form>
         </div>
       </main>
