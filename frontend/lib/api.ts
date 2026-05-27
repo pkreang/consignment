@@ -45,18 +45,20 @@ export function isAuthed(): boolean {
  *  compute to resume too. The first auth/login query would otherwise pay
  *  that 1-3s Neon cold-start on top of bcrypt.
  *
- *  Silent best-effort — never throws, never blocks. */
-export function prewarmBackend(): void {
-  if (typeof window === 'undefined') return;
+ *  Returns true once the backend has answered with a 2xx, false on
+ *  timeout/network/5xx. Never throws. */
+export async function prewarmBackend(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
   const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (!base) return;
+  if (!base) return false;
   try {
-    fetch(`${base}/ready`, {
+    const res = await fetch(`${base}/ready`, {
       method: 'GET',
       signal: AbortSignal.timeout(90_000),
-    }).catch(() => {});
+    });
+    return res.ok;
   } catch {
-    // AbortSignal.timeout unsupported on very old browsers — ignore.
+    return false;
   }
 }
 

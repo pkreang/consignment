@@ -16,11 +16,19 @@ export default function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warming, setWarming] = useState<'pending' | 'ready' | 'failed'>('pending');
 
   // Wake the Render free-tier backend while the user types — cold start
-  // can take 30-60s and would otherwise hit on submit.
+  // can take 30-60s and would otherwise hit on submit. Block the submit
+  // button until /ready answers so the form doesn't appear to hang.
   useEffect(() => {
-    prewarmBackend();
+    let cancelled = false;
+    prewarmBackend().then((ok) => {
+      if (!cancelled) setWarming(ok ? 'ready' : 'failed');
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function onSubmit(e: FormEvent) {
@@ -116,9 +124,22 @@ export default function LoginPage() {
 
             {error && <div className="alert-error">{error}</div>}
 
-            <button className="btn btn-primary w-full" disabled={busy} type="submit">
-              {busy ? t('submitting') : t('submit')}
+            <button
+              className="btn btn-primary w-full gap-2"
+              disabled={busy || warming === 'pending'}
+              type="submit"
+            >
+              {warming === 'pending' && <Spinner />}
+              {busy
+                ? t('submitting')
+                : warming === 'pending'
+                  ? t('warming')
+                  : t('submit')}
             </button>
+
+            {warming === 'pending' && (
+              <p className="text-center text-xs text-surface-500">{t('warmingHint')}</p>
+            )}
 
             <p className="rounded-md bg-surface-50 px-3 py-2 text-xs text-surface-500 dark:bg-surface-800/50 dark:text-surface-400">
               {t('defaultAdmin')}{' '}
@@ -130,6 +151,26 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg
+      className="h-4 w-4 animate-spin"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+      <path
+        d="M4 12a8 8 0 0 1 8-8"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

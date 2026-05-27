@@ -82,7 +82,9 @@
     "showPassword": "แสดง",
     "hidePassword": "ซ่อน",
     "submit": "เข้าสู่ระบบ",
-    "submitting": "กำลังเข้าสู่ระบบ…"
+    "submitting": "กำลังเข้าสู่ระบบ…",
+    "warming": "กำลังเตรียมระบบ…",
+    "warmingHint": "ครั้งแรกของวันอาจรอ ~30 วินาที"
   },
   "dashboard": {
     "title": "แดชบอร์ด",

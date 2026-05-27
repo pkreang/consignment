@@ -82,7 +82,9 @@
     "showPassword": "Show",
     "hidePassword": "Hide",
     "submit": "Sign in",
-    "submitting": "Signing in…"
+    "submitting": "Signing in…",
+    "warming": "Preparing server…",
+    "warmingHint": "First visit of the day may take ~30s"
   },
   "dashboard": {
     "title": "Dashboard",
