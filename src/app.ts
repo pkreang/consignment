@@ -54,6 +54,7 @@ export function createApp(): Express {
           method: req.method,
           url: req.url,
           remoteAddress: req.remoteAddress,
+          userAgent: req.headers?.['user-agent'],
         }),
       },
     }),
