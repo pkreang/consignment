@@ -17,6 +17,8 @@ services:
         value: "3000"
       - key: RUN_MIGRATIONS
         value: "true"
+      - key: RUN_SEED
+        value: "false"
       - key: NODE_OPTIONS
         value: --max-old-space-size=400
       - key: LOG_LEVEL

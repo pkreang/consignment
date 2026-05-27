@@ -64,7 +64,28 @@
     "imports": "นำเข้า CSV",
     "notifications": "การแจ้งเตือน",
     "signIn": "เข้าสู่ระบบ",
-    "signOut": "ออกจากระบบ"
+    "signOut": "ออกจากระบบ",
+    "profile": "โปรไฟล์"
+  },
+  "profile": {
+    "title": "โปรไฟล์",
+    "accountLabel": "บัญชี",
+    "roleLabel": "บทบาท",
+    "changePasswordTitle": "เปลี่ยนรหัสผ่าน",
+    "currentPassword": "รหัสผ่านปัจจุบัน",
+    "newPassword": "รหัสผ่านใหม่",
+    "confirmPassword": "ยืนยันรหัสผ่านใหม่",
+    "hint": "อย่างน้อย 8 ตัวอักษร",
+    "show": "แสดง",
+    "hide": "ซ่อน",
+    "save": "บันทึก",
+    "saving": "กำลังบันทึก…",
+    "success": "เปลี่ยนรหัสผ่านเรียบร้อย",
+    "errCurrentWrong": "รหัสปัจจุบันไม่ถูกต้อง",
+    "errRequired": "กรุณากรอกข้อมูลให้ครบทุกช่อง",
+    "errTooShort": "รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร",
+    "errMismatch": "รหัสผ่านใหม่และยืนยันไม่ตรงกัน",
+    "errSame": "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสปัจจุบัน"
   },
   "login": {
     "brand": "Consignment ERP",

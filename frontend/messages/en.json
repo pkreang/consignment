@@ -64,7 +64,28 @@
     "imports": "CSV Import",
     "notifications": "Notifications",
     "signIn": "Sign in",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "Profile",
+    "accountLabel": "Account",
+    "roleLabel": "Role",
+    "changePasswordTitle": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "hint": "At least 8 characters",
+    "show": "Show",
+    "hide": "Hide",
+    "save": "Save",
+    "saving": "Saving…",
+    "success": "Password changed successfully.",
+    "errCurrentWrong": "Current password is incorrect.",
+    "errRequired": "Please fill in all fields.",
+    "errTooShort": "New password must be at least 8 characters.",
+    "errMismatch": "New password and confirmation do not match.",
+    "errSame": "New password must differ from the current one."
   },
   "login": {
     "brand": "Consignment ERP",

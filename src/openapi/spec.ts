@@ -63,6 +63,14 @@ const schemas = {
       },
     },
   },
+  ChangePasswordRequest: {
+    type: 'object',
+    required: ['currentPassword', 'newPassword'],
+    properties: {
+      currentPassword: { type: 'string' },
+      newPassword: { type: 'string', minLength: 8, maxLength: 200 },
+    },
+  },
 
   // ----- Master data -----
   Product: {
@@ -596,6 +604,15 @@ export const openapiSpec = {
         tags: ['Auth'],
         summary: 'Get the current authenticated user',
         security: auth,
+        responses: { '200': { description: 'OK' }, ...errorResponses },
+      },
+    },
+    '/api/v1/auth/change-password': {
+      put: {
+        tags: ['Auth'],
+        summary: "Change the calling user's own password (verifies current password)",
+        security: auth,
+        requestBody: { required: true, ...json('ChangePasswordRequest') },
         responses: { '200': { description: 'OK' }, ...errorResponses },
       },
     },

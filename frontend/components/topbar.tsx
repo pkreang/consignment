@@ -1,12 +1,13 @@
 "use client";
 
+import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { isAuthed, logout } from '@/lib/api';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { LogOutIcon, MenuIcon } from '@/components/icons';
+import { LogOutIcon, MenuIcon, UsersIcon } from '@/components/icons';
 
 export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
@@ -29,18 +30,33 @@ export function Topbar({ onMenuClick }: { onMenuClick: () => void }) {
       <LocaleSwitcher />
       <ThemeToggle />
       {authed && (
-        <button
-          type="button"
-          onClick={() => {
-            logout();
-            router.refresh();
-          }}
-          className="btn btn-ghost gap-1.5 px-2 sm:px-3"
-          aria-label={t('signOut')}
-        >
-          <LogOutIcon className="h-4 w-4" />
-          <span className="hidden sm:inline">{t('signOut')}</span>
-        </button>
+        <>
+          <Link
+            href="/profile"
+            className={
+              'btn btn-ghost gap-1.5 px-2 sm:px-3 ' +
+              (pathname.startsWith('/profile')
+                ? 'bg-surface-100 dark:bg-surface-800'
+                : '')
+            }
+            aria-label={t('profile')}
+          >
+            <UsersIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('profile')}</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              router.refresh();
+            }}
+            className="btn btn-ghost gap-1.5 px-2 sm:px-3"
+            aria-label={t('signOut')}
+          >
+            <LogOutIcon className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('signOut')}</span>
+          </button>
+        </>
       )}
     </header>
   );

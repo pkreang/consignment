@@ -93,6 +93,44 @@
             },
             "description": "Get the current authenticated user"
           }
+        },
+        {
+          "name": "PUT /api/v1/auth/change-password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "change-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": {\n    \"type\": \"string\"\n  },\n  \"newPassword\": {\n    \"type\": \"string\",\n    \"minLength\": 8,\n    \"maxLength\": 200\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Change the calling user's own password (verifies current password)"
+          }
         }
       ]
     },

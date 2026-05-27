@@ -89,3 +89,19 @@ JWT (HS256) bearer tokens. `authenticate` populates `req.user` with a `permissio
 - `experimentalDecorators` is on but unused; `@typescript-eslint/no-explicit-any` is disabled and `tsconfig` `strict` is on. The path alias `@/*` maps to `src/*`.
 - New endpoints must be added to the OpenAPI spec in `src/openapi/spec.ts` (CI runs `openapi:export`).
 - The frontend (`frontend/`) is a separate Next.js 14 + Tailwind + React Query app with its own `package.json`; its `npm run dev` serves on port 3001.
+
+## Deploy ops (Render + Neon)
+
+Production deploys to Render (Oregon free), DB on Neon. Required env vars **must** be set in the Render dashboard (marked `sync: false` in `render.yaml`):
+
+- `DATABASE_URL` — Neon pooler URL (app runtime)
+- `DIRECT_URL` — Neon direct URL (used by `prisma migrate deploy`)
+- `JWT_SECRET` — at least 16 chars
+
+If `DIRECT_URL` is missing, migrations fall back to the pooler and may apply partially/silently — verify both URLs after rotating Neon branches.
+
+`RUN_SEED` is pinned to `"false"` in `render.yaml` so the prod DB never gets reseeded on deploy. To re-seed, set it `true` *temporarily* in the dashboard and redeploy, then revert.
+
+`docker/entrypoint.sh` logs `DB target: <hostname>/<db>` on startup — check the Render deploy log to confirm the container connected to the expected Neon project/branch.
+
+Recover lost data: Neon free tier keeps 7-day Point-in-Time Restore (Neon dashboard → Branches → Restore).

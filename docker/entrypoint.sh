@@ -4,6 +4,11 @@ set -e
 # Wait until Postgres accepts connections (best effort; container linking should already
 # resolve hostnames). Up to ~60 seconds.
 if [ -n "${DATABASE_URL:-}" ]; then
+  # Log target host + db so operators can tell from deploy logs which DB the
+  # container connected to (helps catch dashboard env-var mistakes that point
+  # production at the wrong Neon project/branch and wipe data).
+  target=$(node -e "const u=new URL(process.env.DATABASE_URL.replace('postgresql','http'));console.log(\`\${u.hostname}\${u.pathname}\`)")
+  echo "DB target: $target"
   host=$(node -e "const u=new URL(process.env.DATABASE_URL.replace('postgresql','http'));console.log(u.hostname)")
   port=$(node -e "const u=new URL(process.env.DATABASE_URL.replace('postgresql','http'));console.log(u.port||5432)")
   i=0
@@ -24,7 +29,7 @@ fi
 
 if [ "${RUN_SEED:-false}" = "true" ]; then
   echo "Running seed..."
-  node dist/prisma/seed.js || echo "(seed step failed; continuing)"
+  node dist/prisma/seed.js
 fi
 
 echo "Starting: $*"

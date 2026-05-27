@@ -1,10 +1,12 @@
 import bcrypt from 'bcrypt';
-import { prisma } from '../../database/prisma';
+import { prisma, withTx } from '../../database/prisma';
+import { env } from '../../config/env';
 import {
   signAccessToken,
   signRefreshToken,
 } from '../../common/middleware/auth';
 import { UnauthorizedError } from '../../common/errors/AppError';
+import { writeAuditLog } from '../../database/audit';
 
 export async function login(username: string, password: string) {
   const user = await prisma.appUser.findUnique({
@@ -61,6 +63,36 @@ export async function login(username: string, password: string) {
     accessToken: signAccessToken(payload),
     refreshToken: signRefreshToken(payload),
   };
+}
+
+export async function changeMyPassword(
+  userId: bigint,
+  currentPassword: string,
+  newPassword: string,
+) {
+  const user = await prisma.appUser.findUnique({
+    where: { user_id: userId },
+    select: { user_id: true, password_hash: true, active_flag: true },
+  });
+  if (!user || !user.active_flag) throw new UnauthorizedError();
+  const ok = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!ok) throw new UnauthorizedError('Current password is incorrect');
+
+  const password_hash = await bcrypt.hash(newPassword, env.BCRYPT_COST);
+
+  await withTx(async (tx) => {
+    await tx.appUser.update({
+      where: { user_id: userId },
+      data: { password_hash },
+    });
+    await writeAuditLog(tx, {
+      tableName: 'app_user',
+      recordId: userId,
+      action: 'UPDATE',
+      newValue: { password_hash },
+      context: { event: 'self_change_password' },
+    });
+  });
 }
 
 export async function me(userId: bigint) {
