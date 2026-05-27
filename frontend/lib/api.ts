@@ -37,6 +37,27 @@ export function isAuthed(): boolean {
   return !!getToken();
 }
 
+/** Decode the JWT payload (no signature check — server still enforces auth).
+ *  Returns the permissions string array from the token, or [] if missing. */
+export function getPermissions(): string[] {
+  const token = getToken();
+  if (!token) return [];
+  try {
+    const payload = JSON.parse(
+      atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
+    );
+    return Array.isArray(payload.permissions) ? (payload.permissions as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** True if the user's permissions include `code` or the `*` wildcard. */
+export function hasPermission(code: string): boolean {
+  const perms = getPermissions();
+  return perms.includes('*') || perms.includes(code);
+}
+
 /** Fire a no-auth GET /ready against the API root to wake both the
  *  Render dyno AND the Neon DB while the user is still typing.
  *
